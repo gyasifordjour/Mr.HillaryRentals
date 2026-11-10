@@ -1,0 +1,478 @@
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0d1410;
+  color: #e8f0e4;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  place-items: center;
+  border: 1px solid rgba(38, 58, 43, .14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .66);
+  color: #315b3b;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s, transform .2s;
+}
+
+.theme-toggle:hover { background: #fff; transform: translateY(-1px); }
+.theme-toggle:focus-visible { outline: 2px solid #8fd694; outline-offset: 2px; }
+
+html.dark .theme-toggle {
+  border-color: rgba(143, 214, 148, .22);
+  background: rgba(255, 255, 255, .07);
+  color: #a9dd8f;
+}
+
+html.dark .theme-toggle:hover { background: rgba(255, 255, 255, .12); }
+
+.login-topbar-actions,
+.rental-request-nav-actions,
+.dashboard-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ============================================================
+   Dashboard
+   ============================================================ */
+
+html.dark .dashboard-shell {
+  --dash-ink: #e8f0e4;
+  --dash-muted: #93a294;
+  --dash-line: #263a2e;
+  background: #0d1410;
+  color: #e8f0e4;
+}
+
+html.dark .dashboard-sidebar {
+  border-color: #24352b;
+  background: #121c16;
+}
+
+html.dark .dashboard-brand { color: #e8f0e4; }
+html.dark .dashboard-brand small { color: #7f8f80; }
+html.dark .dashboard-brand-mark { background: #223229; color: #a9dd8f; }
+html.dark .dashboard-nav-label { color: #7f8f80; }
+html.dark .dashboard-nav-link { color: #b9c7b7; }
+html.dark .dashboard-nav-link:hover { background: #1b2820; color: #e8f0e4; }
+html.dark .dashboard-nav-link.active { background: #1f3327; color: #a9dd8f; }
+html.dark .dashboard-nav-indicator { background: #8fd694; }
+
+html.dark .dashboard-support {
+  border-color: #263a2e;
+  background: #16221b;
+}
+
+html.dark .dashboard-support-icon { background: #223229; color: #9ccf95; }
+html.dark .dashboard-support strong { color: #dbe7d7; }
+html.dark .dashboard-support > span:last-child { color: #93a294; }
+html.dark .dashboard-signout { color: #b9c7b7; }
+html.dark .dashboard-signout:hover { background: #2a1e1c; color: #f0a99a; }
+
+html.dark .dashboard-topbar {
+  border-color: #24352b;
+  background: rgba(18, 28, 22, .94);
+}
+
+html.dark .dashboard-breadcrumb { color: #93a294; }
+html.dark .dashboard-breadcrumb strong { color: #dbe7d7; }
+html.dark .dashboard-topbar-dot { background: #3a4d3f; }
+html.dark .dashboard-demo-pill { background: #3a3018; color: #e0c078; }
+html.dark .dashboard-profile { color: #dbe7d7; }
+html.dark .dashboard-profile small { color: #93a294; }
+html.dark .dashboard-profile-avatar { background: #223229; color: #a9dd8f; }
+
+html.dark .rental-request-page { background: #0d1410; color: #e8f0e4; }
+html.dark .rental-request-nav { border-color: #24352b; background: #121c16; }
+
+html.dark .dash-page-eyebrow { color: #8fa48d; }
+html.dark .dash-page-head h1 { color: #e8f0e4; }
+html.dark .dash-page-head p { color: #a9b9a7; }
+
+html.dark .dash-primary-link,
+html.dark .dash-primary-button { background: #8fd694; color: #0d2115 !important; }
+html.dark .dash-primary-link:hover,
+html.dark .dash-primary-button:hover:not(:disabled) { background: #a4e3a8; }
+
+html.dark .dash-secondary-link,
+html.dark .dash-secondary-button {
+  border-color: #2a3b30;
+  background: #16221b;
+  color: #c3d0c0 !important;
+}
+
+html.dark .dash-secondary-link:hover,
+html.dark .dash-secondary-button:hover { background: #1f3327; }
+
+html.dark .dash-stat-card,
+html.dark .dash-panel,
+html.dark .dash-room-card,
+html.dark .dash-camera-card,
+html.dark .dash-service-card,
+html.dark .dash-rental-card,
+html.dark .dash-payment-card,
+html.dark .dash-form-summary {
+  border-color: #263a2e;
+  background: #151f19;
+}
+
+html.dark .dash-stat-top { color: #93a294; }
+html.dark .dash-stat-icon,
+html.dark .dash-activity-icon,
+html.dark .dash-empty-icon,
+html.dark .dash-rental-icon,
+html.dark .dash-service-icon { background: #223229; color: #9ccf95; }
+html.dark .dash-stat-card strong { color: #e8f0e4; }
+html.dark .dash-stat-card small { color: #93a294; }
+html.dark .dash-demo-note { color: #93a294; }
+html.dark .dash-section-title { color: #dbe7d7; }
+html.dark .dash-subtitle { color: #93a294; }
+html.dark .dash-table-empty { color: #93a294; }
+
+html.dark .dash-room-art {
+  color: #9ccf95;
+  background: linear-gradient(145deg, #223229, #1a2a20);
+}
+
+html.dark .dash-farmer-name > span { background: #223229; color: #a9dd8f; }
+
+html.dark .dash-panel-head { border-color: #24352b; }
+html.dark .dash-panel-head h2 { color: #e8f0e4; }
+html.dark .dash-panel-head a { color: #a9dd8f; }
+
+html.dark .dash-table th { color: #8fa48d; }
+html.dark .dash-table td { border-color: #24352b; color: #b9c7b7; }
+html.dark .dash-table td strong { color: #dbe7d7; }
+html.dark .dash-table td small { color: #93a294; }
+
+html.dark .dash-badge { background: #223229; color: #b9c7b7; }
+html.dark .dash-badge.green { background: #22352a; color: #a9dd8f; }
+html.dark .dash-badge.amber { background: #3a3018; color: #e0c078; }
+html.dark .dash-badge.red { background: #3a2220; color: #f0a99a; }
+
+html.dark .dash-activity { border-color: #24352b; }
+html.dark .dash-activity strong { color: #dbe7d7; }
+html.dark .dash-activity span { color: #93a294; }
+html.dark .dash-empty strong { color: #dbe7d7; }
+html.dark .dash-empty p { color: #93a294; }
+
+html.dark .dash-filter-row { border-color: #24352b; }
+html.dark .dash-search { border-color: #2a3b30; color: #93a294; }
+html.dark .dash-search input { color: #e8f0e4; }
+html.dark .dash-search input::placeholder { color: #7f8f80; }
+html.dark .dash-filter-buttons button { color: #b9c7b7; }
+html.dark .dash-filter-buttons button.active { border-color: #2a3b30; background: #223229; color: #a9dd8f; }
+
+html.dark .dash-room-illustration { background: #223229; }
+html.dark .dash-room-info h3 { color: #e8f0e4; }
+html.dark .dash-room-info p { color: #b9c7b7; }
+html.dark .dash-room-info-footer { border-color: #24352b; }
+html.dark .dash-room-info-footer strong { color: #dbe7d7; }
+html.dark .dash-room-info-footer a { color: #a9dd8f; }
+
+html.dark .dash-camera-card-head strong { color: #e8f0e4; }
+html.dark .dash-camera-card-head span { color: #93a294; }
+
+html.dark .dash-notice {
+  border-color: #263a2e;
+  background: #16221b;
+  color: #b9c7b7;
+}
+html.dark .dash-notice svg { color: #9ccf95; }
+
+html.dark .dash-rentals-toolbar { border-color: #24352b; }
+html.dark .dash-rental-filters button { color: #b9c7b7; }
+html.dark .dash-rental-filters button span { color: #8fa48d; }
+html.dark .dash-rental-filters button.active { border-color: #2a3b30; background: #223229; color: #a9dd8f; }
+html.dark .dash-rental-card { border-color: #263a2e; }
+html.dark .dash-rental-title h2 { color: #e8f0e4; }
+html.dark .dash-rental-title p { color: #93a294; }
+html.dark .dash-rental-title p span { color: #5f7264; }
+html.dark .dash-rental-reference { color: #8fa48d; }
+html.dark .dash-rental-details { border-color: #24352b; }
+html.dark .dash-rental-details > div > span { color: #8fa48d; }
+html.dark .dash-rental-details strong { color: #b9c7b7; }
+html.dark .dash-rental-details strong svg { color: #8fa48d; }
+html.dark .dash-rental-footnote { background: #2e2716; color: #d8c08a; }
+
+html.dark .dash-service-availability { color: #93a294; }
+html.dark .dash-service-card h2 { color: #e8f0e4; }
+html.dark .dash-service-card-body > p { color: #b9c7b7; }
+html.dark .dash-service-divider { background: #24352b; }
+html.dark .dash-service-list-label { color: #dbe7d7; }
+html.dark .dash-service-card ul { color: #b9c7b7; }
+html.dark .dash-service-card li::before { background: #8fd694; }
+html.dark .dash-service-notice {
+  border-color: #263a2e;
+  background: #16221b;
+  color: #b9c7b7;
+}
+html.dark .dash-service-notice > svg { color: #9ccf95; }
+html.dark .dash-service-notice strong { color: #dbe7d7; }
+html.dark .dash-service-notice a { color: #a9dd8f; }
+
+html.dark .dash-form-field { color: #c3d0c0; }
+html.dark .dash-form-field small { color: #93a294; }
+html.dark .dash-form-field input,
+html.dark .dash-form-field select,
+html.dark .dash-form-field textarea,
+html.dark .dash-form-body > .dash-form-field > input {
+  border-color: #2a3b30;
+  background: #101814;
+  color: #e8f0e4;
+}
+html.dark .dash-form-field input:focus,
+html.dark .dash-form-field select:focus,
+html.dark .dash-form-field textarea:focus {
+  border-color: #5f9a68;
+  box-shadow: 0 0 0 2px rgba(143, 214, 148, .16);
+}
+html.dark .dash-form-field input[readonly] { background: #1b2820; color: #93a294; }
+
+html.dark .dash-form-disclaimer,
+html.dark .dash-form-summary-note { color: #93a294; }
+html.dark .dash-form-summary h2 { color: #e8f0e4; }
+html.dark .dash-form-summary > p { color: #b9c7b7; }
+html.dark .dash-form-summary > strong { color: #e8f0e4; }
+html.dark .dash-form-summary > strong small { color: #93a294; }
+
+html.dark .dash-form-error { border-color: #4a2a24; background: #2a1815; color: #f0a99a; }
+html.dark .dash-form-success { border-color: #2a4030; background: #16261b; color: #a9dd8f; }
+
+html.dark .dash-form-input-icon { border-color: #2a3b30; color: #93a294; }
+html.dark .dash-form-input-icon input { color: #e8f0e4; }
+html.dark .dash-form-input-icon:focus-within {
+  border-color: #5f9a68;
+  box-shadow: 0 0 0 2px rgba(143, 214, 148, .16);
+}
+
+html.dark .dash-service-request-form { border-color: #24352b; }
+html.dark .dash-service-review .dash-rental-card h3 { color: #e8f0e4; }
+html.dark .dash-service-review-meta,
+html.dark .dash-rental-request-note { color: #93a294; }
+
+html.dark .dash-action-approve {
+  border-color: #2a4030;
+  background: #16261b;
+  color: #a9dd8f;
+}
+html.dark .dash-action-reject {
+  border-color: #4a2a24;
+  background: #2a1815;
+  color: #f0a99a;
+}
+
+html.dark .dash-payment-description strong { color: #e8f0e4; }
+html.dark .dash-payment-description span { color: #93a294; }
+html.dark .dash-payment-amount { color: #e8f0e4; }
+html.dark .dash-payment-receipt { color: #b9c7b7; }
+html.dark .dash-payment-receipt summary { color: #a9dd8f; }
+html.dark .dash-payment-receipt p { color: #93a294; }
+
+/* ============================================================
+   Login & signup
+   ============================================================ */
+
+html.dark .login-page {
+  --login-ink: #e8f0e4;
+  --login-muted: #93a294;
+  background: #0d1410;
+  color: #e8f0e4;
+}
+
+html.dark .login-brand-mark { background: #223229; color: #a9dd8f; }
+html.dark .login-back-link { color: #a9b9a7 !important; }
+html.dark .login-back-link:hover { color: #a9dd8f !important; }
+html.dark .login-eyebrow { color: #8fa48d; }
+html.dark .login-heading h1 { color: #e8f0e4; }
+html.dark .login-heading p { color: #a9b9a7; }
+html.dark .login-form > label,
+html.dark .login-password-label > label { color: #c3d0c0; }
+
+html.dark .login-input-wrap {
+  border-color: #2a3b30;
+  background: #101814;
+  color: #8fa48d;
+}
+html.dark .login-input-wrap:focus-within {
+  border-color: #5f9a68;
+  box-shadow: 0 0 0 3px rgba(143, 214, 148, .14);
+}
+html.dark .login-input-wrap input { color: #e8f0e4; }
+html.dark .login-input-wrap input::placeholder { color: #7f8f80; }
+html.dark .login-country-code { color: #a9b9a7; }
+html.dark .login-forgot { color: #a9dd8f; }
+html.dark .login-forgot:hover { color: #c9efbd; }
+html.dark .login-password-toggle { color: #93a294; }
+
+html.dark .login-error { background: #2a1815; color: #f0a99a; }
+html.dark .login-notice { background: #16261b; color: #a9dd8f; }
+html.dark .login-config-note { color: #a9b9a7; }
+html.dark .login-config-note svg { color: #9ccf95; }
+
+html.dark .login-submit { background: #8fd694; color: #0d2115; }
+html.dark .login-submit:not(:disabled):hover { background: #a4e3a8; }
+
+html.dark .login-demo { border-color: #24352b; }
+html.dark .login-demo-heading { color: #c3d0c0; }
+html.dark .login-demo-heading > span:last-child { color: #d8c08a; }
+html.dark .login-demo-actions button {
+  border-color: #2a3b30;
+  background: #16221b;
+  color: #c3d0c0;
+}
+html.dark .login-demo-actions button:hover:not(:disabled) { border-color: #3a5440; background: #223229; }
+html.dark .login-security { color: #93a294; }
+html.dark .login-security svg { color: #9ccf95; }
+html.dark .login-account-help { color: #93a294; }
+html.dark .login-account-help span { color: #c3d0c0; }
+html.dark .login-foot { color: #7f8f80; }
+
+html.dark .login-art-side {
+  background: linear-gradient(155deg, #16261b 0%, #1b2f21 47%, #223a29 100%);
+}
+html.dark .login-art-glow {
+  background: radial-gradient(circle, rgba(143, 214, 148, .2), rgba(143, 214, 148, .04) 43%, transparent 70%);
+}
+html.dark .login-art-kicker { color: #9ab09a; }
+html.dark .login-art-copy h2 { color: #e8f0e4; }
+html.dark .login-art-copy h2 em { color: #a9dd8f; }
+html.dark .login-art-copy p { color: #b9c7b7; }
+html.dark .login-farm-illustration { background: #223229; }
+html.dark .login-feature-card {
+  border-color: rgba(255, 255, 255, .12);
+  background: rgba(18, 28, 22, .82);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .28);
+}
+html.dark .login-feature-icon { background: #223229; color: #a9dd8f; }
+html.dark .login-feature-card strong { color: #e8f0e4; }
+html.dark .login-feature-card > div:nth-child(2) span { color: #a9b9a7; }
+html.dark .login-online { color: #a9dd8f; }
+html.dark .login-art-caption { color: rgba(220, 235, 216, .55); }
+
+/* ============================================================
+   Rooms & rental request
+   ============================================================ */
+
+html.dark .rooms-page {
+  --rooms-ink: #e8f0e4;
+  --rooms-muted: #93a294;
+  --rooms-line: #263a2e;
+  background: #0d1410;
+  color: #e8f0e4;
+}
+
+html.dark .rooms-nav {
+  border-color: rgba(143, 214, 148, .12);
+  background: #121c16;
+}
+
+html.dark .rooms-brand-mark { background: #223229; color: #a9dd8f; }
+html.dark .rooms-back-link { color: #a9b9a7 !important; }
+html.dark .rooms-sign-in { color: #a9dd8f !important; }
+
+html.dark .rooms-hero { background: #14201a; }
+html.dark .rooms-eyebrow { color: #8fa48d; }
+html.dark .rooms-hero h1 { color: #e8f0e4; }
+html.dark .rooms-hero h1 em { color: #a9dd8f; }
+html.dark .rooms-hero-copy > p { color: #b9c7b7; }
+html.dark .rooms-hero-points span { color: #c3d0c0; }
+html.dark .rooms-hero-points svg { color: #8fd694; }
+html.dark .rooms-hero-art { background: #223229; }
+html.dark .rooms-art-label {
+  border-color: rgba(255, 255, 255, .16);
+  background: rgba(18, 28, 22, .82);
+  color: #dbe7d7;
+}
+
+html.dark .rooms-eyebrow-dark { color: #8fa48d; }
+html.dark .rooms-catalog-head h2 { color: #e8f0e4; }
+html.dark .rooms-location { color: #93a294; }
+html.dark .rooms-listing-summary { color: #93a294; }
+html.dark .rooms-listing-summary strong { color: #a9dd8f; }
+
+html.dark .rooms-filter button { color: #b9c7b7; }
+html.dark .rooms-filter button span { color: #8fa48d; }
+html.dark .rooms-filter button.active {
+  border-color: #2a3b30;
+  background: #1b2820;
+  color: #a9dd8f;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .24);
+}
+html.dark .rooms-filter button.active span { color: #8fd694; }
+html.dark .rooms-sort { color: #93a294; }
+html.dark .rooms-sort select { color: #e8f0e4; }
+
+html.dark .room-card {
+  border-color: #263a2e;
+  background: #151f19;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .24);
+}
+html.dark .room-card:hover {
+  border-color: #3a5440;
+  box-shadow: 0 15px 34px rgba(0, 0, 0, .38);
+}
+html.dark .room-card-image { background: #223229; }
+
+html.dark .room-status,
+html.dark .room-number {
+  border-color: rgba(255, 255, 255, .16);
+  background: rgba(18, 28, 22, .84);
+  color: #c3d0c0;
+}
+html.dark .room-status.status-available { color: #a9dd8f; }
+html.dark .room-status.status-available > span { background: #8fd694; box-shadow: 0 0 0 3px rgba(143, 214, 148, .16); }
+html.dark .room-status > span { background: #93a294; }
+html.dark .room-number { color: #c3d0c0; }
+
+html.dark .room-card-farm { color: #8fa48d; }
+html.dark .room-card-title h3 { color: #e8f0e4; }
+html.dark .room-camera-ready { background: #223229; color: #a9dd8f; }
+html.dark .room-facts { border-color: #24352b; }
+html.dark .room-facts span { color: #b9c7b7; }
+html.dark .room-facts svg { color: #8fa48d; }
+html.dark .room-price { color: #e8f0e4; }
+html.dark .room-price span { color: #93a294; }
+
+html.dark .room-request-button { background: #8fd694; color: #0d2115 !important; }
+html.dark .room-request-button:hover { background: #a4e3a8; }
+html.dark .room-unavailable-button { background: #223229; color: #93a294; }
+
+html.dark .rooms-empty {
+  border-color: #2a3b30;
+  background: #151f19;
+}
+html.dark .rooms-empty-icon { background: #223229; color: #a9dd8f; }
+html.dark .rooms-empty h3 { color: #e8f0e4; }
+html.dark .rooms-empty p { color: #93a294; }
+html.dark .rooms-empty button { color: #a9dd8f; }
+html.dark .rooms-data-note { color: #8fa48d; }
+
+html.dark .rooms-help { background: #16261b; }
+html.dark .rooms-help h2 { color: #e8f0e4; }
+html.dark .rooms-help p { color: #b9c7b7; }
+html.dark .rooms-help-button { background: #8fd694; color: #0d2115 !important; }
+
+html.dark .rooms-footer { background: #101a14; }
+html.dark .rooms-footer .rooms-brand-mark { background: #223229; color: #a9dd8f; }
+
+@media (max-width: 380px) {
+  .login-topbar-actions .login-back-link { display: none; }
+}
+
+@media (max-width: 430px) {
+  .rental-request-nav-actions .rooms-back-link { display: none; }
+}

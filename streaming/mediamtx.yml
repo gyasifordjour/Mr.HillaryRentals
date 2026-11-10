@@ -1,0 +1,3 @@
+# MediaMTX config placeholder. Cameras are added as paths (one per room) with RTSP sources
+# and protected by external auth that calls the get-stream-token logic.
+paths: {}

@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.local
+supabase/.temp/
+docs/Project_Quotation_Invoice.docx
+*.log
+*.tsbuildinfo
+.DS_Store
