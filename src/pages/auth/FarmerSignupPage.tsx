@@ -82,7 +82,7 @@ export default function FarmerSignupPage() {
             </>
           ) : (
             <div className="login-message login-notice" role="status">
-              <p>Farmer accounts are set up by the farm administrator. Ask them to add your name and email address. When you receive an email code, return here and choose <strong>Sign in with an email code</strong>.</p>
+              <p>Farmer accounts are set up by the farm administrator. Ask them to add your name and email address. When you receive an email sign-in link, open it in your browser to finish signing in.</p>
               <Link className="login-back-link" to={`/login?returnTo=${encodeURIComponent(returnTo)}`}>Go to sign in <ArrowRight size={15} /></Link>
             </div>
           )}

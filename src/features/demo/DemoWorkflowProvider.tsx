@@ -40,6 +40,7 @@ interface DemoWorkflowState {
   reload: () => Promise<void>;
   saveRoom: (roomId: string | null, room: Omit<Room, "id">, image?: File, removeImage?: boolean) => Promise<void>;
   deleteRoom: (roomId: string) => Promise<void>;
+  deleteFarmer: (farmerId: string) => Promise<void>;
   requestRental: (input: { farmerId: string; roomId: string; startDate: string; endDate: string; pigCount: number; note: string }) => Promise<Rental>;
   decideRental: (rentalId: string, decision: "active" | "cancelled") => Promise<void>;
   createServiceRequest: (input: Omit<DemoServiceRequest, "id" | "status">) => Promise<void>;
@@ -237,6 +238,50 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
         if (storageError) throw new Error(`Room deleted, but its image could not be removed: ${storageError.message}`);
       }
     },
+    deleteFarmer: async (farmerId) => {
+      const profile = profiles.find((item) => item.id === farmerId);
+      if (!profile || profile.role !== "farmer") throw new Error("Choose a valid farmer account.");
+      if (profile.id === user?.id) throw new Error("You cannot delete the account you are signed in with.");
+
+      if (!useMocks) {
+        const { data, error } = await supabase.functions.invoke<{ deleted: boolean; message: string }>("delete-farmer", {
+          body: { farmer_id: farmerId },
+        });
+        if (error) {
+          const context = "context" in error ? error.context : null;
+          if (context instanceof Response) {
+            const responseBody: unknown = await context.clone().json().catch(() => null);
+            if (responseBody && typeof responseBody === "object" && "error" in responseBody && typeof responseBody.error === "string") {
+              throw new Error(responseBody.error);
+            }
+          }
+          throw error;
+        }
+        if (!data?.deleted) throw new Error("The server returned an incomplete account-deletion result.");
+        await reload();
+        return;
+      }
+
+      const farmerRentalIds = new Set(rentals.filter((rental) => rental.farmer_id === farmerId).map((rental) => rental.id));
+      const removedRoomIds = new Set(rentalRooms.filter((link) => farmerRentalIds.has(link.rental_id)).map((link) => link.room_id));
+      const remainingActiveRoomIds = new Set(
+        rentalRooms
+          .filter((link) => !farmerRentalIds.has(link.rental_id))
+          .filter((link) => rentals.some((rental) => rental.id === link.rental_id && rental.status === "active"))
+          .map((link) => link.room_id)
+      );
+
+      setProfiles((current) => current.filter((item) => item.id !== farmerId));
+      setPayments((current) => current.filter((payment) => payment.farmer_id !== farmerId));
+      setServiceRequests((current) => current.filter((request) => request.farmer_id !== farmerId));
+      setRentalRooms((current) => current.filter((link) => !farmerRentalIds.has(link.rental_id)));
+      setRentals((current) => current.filter((rental) => rental.farmer_id !== farmerId));
+      setRooms((current) => current.map((room) => (
+        removedRoomIds.has(room.id) && !remainingActiveRoomIds.has(room.id) && room.status === "occupied"
+          ? { ...room, status: "available" }
+          : room
+      )));
+    },
     requestRental: async ({ farmerId, roomId, startDate, endDate, pigCount, note }) => {
       if (!farmerId) throw new Error("Sign in with a farmer account to request a room.");
       const room = rooms.find((item) => item.id === roomId);
@@ -329,7 +374,7 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
       }
       setPayments((current) => current.map((payment) => payment.id === paymentId ? { ...payment, status: "paid" } : payment));
     },
-  }), [cameras, farms, isLoading, loadError, payments, profiles, rentalRooms, rentals, reload, rooms, serviceRequests]);
+  }), [cameras, farms, isLoading, loadError, payments, profiles, rentalRooms, rentals, reload, rooms, serviceRequests, user]);
 
   return (
     <DemoWorkflowContext.Provider value={value}>

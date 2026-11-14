@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { AtSign, LoaderCircle, Search, UserPlus, Users, UserRound } from "lucide-react";
+import { AtSign, LoaderCircle, Search, Trash2, UserPlus, Users, UserRound } from "lucide-react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";
 import { supabase, useMocks } from "@/lib/supabase";
@@ -9,7 +9,8 @@ export default function AdminFarmers() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [creating, setCreating] = useState(false);
-  const { profiles, rentals, rentalRooms, rooms, reload } = useDemoWorkflows();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { profiles, rentals, rentalRooms, rooms, reload, deleteFarmer } = useDemoWorkflows();
   const toast = useToast();
   const farmers = useMemo(() => profiles
     .filter((profile) => profile.role === "farmer")
@@ -56,6 +57,25 @@ export default function AdminFarmers() {
     }
   };
 
+  const handleDeleteFarmer = async (farmer: (typeof farmers)[number]) => {
+    const label = farmer.full_name || farmer.email || farmer.phone || "this farmer";
+    const rentalCount = rentals.filter((rental) => rental.farmer_id === farmer.id).length;
+    const warning = rentalCount
+      ? `Delete ${label}? This permanently removes the account and its ${rentalCount} rental record${rentalCount === 1 ? "" : "s"}, including any payments and service requests.`
+      : `Delete ${label}? This permanently removes the account.`;
+    if (!window.confirm(warning)) return;
+
+    setDeletingId(farmer.id);
+    try {
+      await deleteFarmer(farmer.id);
+      toast.success("Farmer account removed", `${label} no longer has an account.`);
+    } catch (reason) {
+      toast.error("Farmer account not removed", reason instanceof Error ? reason.message : "The account could not be removed.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div>
       <header className="dash-page-head">
@@ -68,7 +88,7 @@ export default function AdminFarmers() {
 
       <form className="dash-panel dash-form-panel" onSubmit={handleCreateFarmer}>
         <div className="dash-panel-head">
-          <div><h2>Add a farmer account</h2><span className="dash-subtitle">Create an email sign-in and send the farmer a one-time code.</span></div>
+          <div><h2>Add a farmer account</h2><span className="dash-subtitle">Create an email sign-in and send the farmer a secure sign-in link.</span></div>
           <UserPlus size={18} aria-hidden="true" />
         </div>
         <div className="dash-form-body">
@@ -83,7 +103,7 @@ export default function AdminFarmers() {
               <span className="dash-form-input-icon"><AtSign size={15} /><input autoComplete="email" disabled={useMocks || creating} id="farmer-email" maxLength={254} onChange={(event) => setEmail(event.target.value)} placeholder="farmer@example.com" required type="email" value={email} /></span>
             </label>
           </div>
-          <div><button className="dash-primary-button" disabled={useMocks || creating} type="submit">{creating ? <LoaderCircle size={15} /> : <UserPlus size={15} />}{creating ? "Creating account..." : "Create account and send code"}</button></div>
+          <div><button className="dash-primary-button" disabled={useMocks || creating} type="submit">{creating ? <LoaderCircle size={15} /> : <UserPlus size={15} />}{creating ? "Creating account..." : "Create account and send link"}</button></div>
         </div>
       </form>
 
@@ -100,7 +120,7 @@ export default function AdminFarmers() {
         </div>
         <div className="dash-table-wrap">
           <table className="dash-table">
-            <thead><tr><th>FARMER</th><th>EMAIL / PHONE</th><th>ACTIVE RENTALS</th><th>ROOMS</th><th>ACCOUNT</th></tr></thead>
+            <thead><tr><th>FARMER</th><th>EMAIL / PHONE</th><th>ACTIVE RENTALS</th><th>ROOMS</th><th>ACCOUNT</th><th>ACTIONS</th></tr></thead>
             <tbody>{farmers.map((farmer) => {
               const farmerRentals = rentals.filter((rental) => rental.farmer_id === farmer.id);
               const activeRentals = farmerRentals.filter((rental) => rental.status === "active");
@@ -113,6 +133,18 @@ export default function AdminFarmers() {
                   <td>{activeRentals.length || "—"}</td>
                   <td>{farmerRooms.length ? farmerRooms.map((room) => `Room ${String(room.room_number).padStart(2, "0")}`).join(", ") : "—"}</td>
                   <td><span className="dash-badge green">Active</span></td>
+                  <td>
+                    <button
+                      className="dash-room-delete-button"
+                      type="button"
+                      onClick={() => handleDeleteFarmer(farmer)}
+                      disabled={deletingId === farmer.id}
+                      aria-label={`Delete ${farmer.full_name || "farmer"}'s account`}
+                    >
+                      {deletingId === farmer.id ? <LoaderCircle className="dash-spin" size={14} /> : <Trash2 size={14} />}
+                      {deletingId === farmer.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </td>
                 </tr>
               );
             })}</tbody>
@@ -120,7 +152,7 @@ export default function AdminFarmers() {
           {!farmers.length && <div className="dash-table-empty">No farmer accounts match your search.</div>}
         </div>
       </section>
-      <p className="dash-demo-note">{useMocks ? "Farmer records shown are sample data. " : "Existing farmer records remain read-only here. "}Accounts are provisioned through the secure form above; role changes require separate administrator access.</p>
+      <p className="dash-demo-note">{useMocks ? "Farmer records shown are sample data. " : ""}Deleting a farmer permanently removes their account, rentals, payments, and service requests. Role changes require separate administrator access.</p>
     </div>
   );
 }

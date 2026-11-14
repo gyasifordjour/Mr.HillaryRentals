@@ -6,8 +6,7 @@ import type { Profile, Role } from "@/types";
 interface AuthState {
   user: Profile | null;
   signIn: (identifier: string, password: string) => Promise<void>;
-  requestEmailSignInCode: (email: string) => Promise<void>;
-  verifyEmailSignInCode: (email: string, token: string) => Promise<void>;
+  requestEmailSignInLink: (email: string) => Promise<void>;
   signInAsDemo: (role: Role) => void;
   registerDemoFarmer: (details: Pick<Profile, "full_name" | "phone">) => Profile;
   updateDemoProfile: (details: Pick<Profile, "full_name" | "phone">) => void;
@@ -127,32 +126,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw profileError;
     }
   };
-  const requestEmailSignInCode = async (email: string) => {
-    if (useMocks) throw new Error("Email-code sign-in requires a configured Supabase project.");
+  const requestEmailSignInLink = async (email: string) => {
+    if (useMocks) throw new Error("Email sign-in requires a configured Supabase project.");
+    const redirect = new URL("/login", window.location.origin);
+    redirect.searchParams.set("returnTo", "/dashboard");
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
-      options: { shouldCreateUser: false },
+      options: { shouldCreateUser: false, emailRedirectTo: redirect.toString() },
     });
     if (error) throw error;
-  };
-  const verifyEmailSignInCode = async (email: string, token: string) => {
-    if (useMocks) throw new Error("Email-code sign-in requires a configured Supabase project.");
-    const { data, error } = await supabase.auth.verifyOtp({
-      email: email.trim().toLowerCase(),
-      token: token.trim(),
-      type: "email",
-    });
-    if (error) throw error;
-    if (!data.user) throw new Error("Email verification did not return an authenticated user.");
-
-    try {
-      const profile = await fetchProfile(data.user.id, data.user.email ?? null);
-      setUser(profile);
-    } catch (profileError) {
-      const { error: signOutError } = await supabase.auth.signOut();
-      if (signOutError) throw signOutError;
-      throw profileError;
-    }
   };
   const signInAsDemo = (role: Role) => {
     if (!useDemoAuth) {
@@ -316,8 +298,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={{
     user,
     signIn,
-    requestEmailSignInCode,
-    verifyEmailSignInCode,
+    requestEmailSignInLink,
     signInAsDemo,
     registerDemoFarmer,
     updateDemoProfile,

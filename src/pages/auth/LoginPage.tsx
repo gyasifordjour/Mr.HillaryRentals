@@ -12,12 +12,11 @@ import "@/styles/login.css";
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [emailCode, setEmailCode] = useState("");
-  const [emailCodeSent, setEmailCodeSent] = useState(false);
+  const [emailLinkSent, setEmailLinkSent] = useState(false);
   const [loginMethod, setLoginMethod] = useState<"password" | "email">("password");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
-  const { user, signIn, requestEmailSignInCode, verifyEmailSignInCode, signInAsDemo } = useAuth();
+  const { user, signIn, requestEmailSignInLink, signInAsDemo } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -31,23 +30,18 @@ export default function LoginPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!identifier.trim() || (loginMethod === "password" && !password) || (loginMethod === "email" && emailCodeSent && !emailCode.trim())) {
-      toast.error("Missing details", loginMethod === "email" ? "Enter your email address and verification code to continue." : "Enter your email or phone number and password to continue.");
+    if (!identifier.trim() || (loginMethod === "password" && !password)) {
+      toast.error("Missing details", loginMethod === "email" ? "Enter your email address to continue." : "Enter your email or phone number and password to continue.");
       return;
     }
 
     setBusy(true);
     try {
       if (loginMethod === "email") {
-        if (!identifier.includes("@")) throw new Error("Enter the email address linked to your farmer account.");
-        if (!emailCodeSent) {
-          await requestEmailSignInCode(identifier);
-          setEmailCodeSent(true);
-          toast.success("Code sent", "Check your email for a sign-in code.");
-        } else {
-          await verifyEmailSignInCode(identifier, emailCode);
-          toast.success("Signed in", "Welcome back to Trinity Integrated Farms.");
-        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) throw new Error("Enter the email address linked to your farmer account.");
+        await requestEmailSignInLink(identifier);
+        setEmailLinkSent(true);
+        toast.success("Sign-in link sent", "Check your email and open the link to sign in.");
       } else {
         await signIn(identifier, password);
         toast.success("Signed in", "Welcome back to Trinity Integrated Farms.");
@@ -59,23 +53,10 @@ export default function LoginPage() {
     }
   };
 
-  const requestAnotherCode = async () => {
-    setBusy(true);
-    try {
-      await requestEmailSignInCode(identifier);
-      toast.success("Code sent", "A new sign-in code was sent to your email.");
-    } catch (reason) {
-      toast.error("Code not sent", reason instanceof Error ? reason.message : "We couldn't send another code.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const toggleLoginMethod = () => {
     if (loginMethod === "password" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) setIdentifier("");
     setLoginMethod((method) => method === "password" ? "email" : "password");
-    setEmailCodeSent(false);
-    setEmailCode("");
+    setEmailLinkSent(false);
   };
 
   const handleDemoSignIn = (role: Role) => {
@@ -117,9 +98,11 @@ export default function LoginPage() {
                 id="login-identifier"
                 inputMode="email"
                 name="identifier"
-                onChange={(event) => setIdentifier(event.target.value)}
+                onChange={(event) => {
+                  setIdentifier(event.target.value);
+                  setEmailLinkSent(false);
+                }}
                 placeholder={loginMethod === "email" ? "farmer@example.com" : "Email or 024 123 4567"}
-                readOnly={loginMethod === "email" && emailCodeSent}
                 type={loginMethod === "email" ? "email" : "text"}
                 value={identifier}
                 required
@@ -133,7 +116,7 @@ export default function LoginPage() {
                   <button
                     className="login-forgot"
                     onClick={() => {
-                      toast.info("Password reset", "Contact your farm administrator. Use email-code sign-in if your account was created by the administrator.");
+                      toast.info("Password reset", "Contact your farm administrator. Use email-link sign-in if your account was created by the administrator.");
                     }}
                     type="button"
                   >
@@ -162,30 +145,17 @@ export default function LoginPage() {
                   </button>
                 </div>
               </>
-            ) : emailCodeSent ? (
-              <>
-                <div className="login-password-label">
-                  <label htmlFor="login-email-code">Email verification code</label>
-                  <button className="login-forgot" disabled={busy} onClick={() => void requestAnotherCode()} type="button">Resend code</button>
-                </div>
-                <div className="login-input-wrap">
-                  <input
-                    autoComplete="one-time-code"
-                    id="login-email-code"
-                    inputMode="numeric"
-                    name="emailCode"
-                    onChange={(event) => setEmailCode(event.target.value)}
-                    placeholder="Enter the code from your email"
-                    type="text"
-                    value={emailCode}
-                    required
-                  />
-                </div>
-              </>
             ) : (
               <p className="login-config-note">
                 <ShieldCheck size={17} />
-                <span>Only email addresses already set up by the farm administrator can receive a sign-in code.</span>
+                <span>Only email addresses already set up by the farm administrator can receive a sign-in link.</span>
+              </p>
+            )}
+
+            {loginMethod === "email" && emailLinkSent && (
+              <p className="login-config-note" role="status">
+                <ShieldCheck size={17} />
+                <span>We sent a sign-in link to {identifier}. Open it in your browser to finish signing in. If the link expires or has been used, request another one.</span>
               </p>
             )}
 
@@ -197,12 +167,12 @@ export default function LoginPage() {
             )}
 
             <button className="login-submit" disabled={busy || useMocks} type="submit">
-              {busy ? (emailCodeSent ? "Verifying..." : loginMethod === "email" ? "Sending code..." : "Signing in...") : loginMethod === "email" ? (emailCodeSent ? "Verify and sign in" : "Send sign-in code") : "Sign in"}
+              {busy ? (loginMethod === "email" ? "Sending link..." : "Signing in...") : loginMethod === "email" ? (emailLinkSent ? "Resend sign-in link" : "Send sign-in link") : "Sign in"}
               {!busy && <ArrowRight size={17} />}
             </button>
             {!useMocks && (
               <button className="login-method-toggle" disabled={busy} onClick={toggleLoginMethod} type="button">
-                {loginMethod === "email" ? "Use password instead" : "Sign in with an email code"}
+                {loginMethod === "email" ? "Use password instead" : "Sign in with an email link"}
               </button>
             )}
           </form>

@@ -20,6 +20,24 @@ function normalizeEmail(value: unknown) {
   return email;
 }
 
+function getFarmerSignInRedirect(origin: string | null, allowedHttpsOrigins: Set<string>) {
+  if (!origin) return null;
+
+  try {
+    const appUrl = new URL(origin);
+    const isLocalHttp = appUrl.protocol === "http:"
+      && ["localhost", "127.0.0.1", "[::1]"].includes(appUrl.hostname);
+    const isAllowedHttps = appUrl.protocol === "https:" && allowedHttpsOrigins.has(appUrl.origin);
+    if (appUrl.origin !== origin || (!isAllowedHttps && !isLocalHttp)) return null;
+
+    const redirect = new URL("/login", appUrl.origin);
+    redirect.searchParams.set("returnTo", "/dashboard");
+    return redirect.toString();
+  } catch {
+    return null;
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -87,6 +105,17 @@ Deno.serve(async (request) => {
     return respond({ error: "Enter a valid email address." }, 400);
   }
 
+  const allowedHttpsOrigins = new Set(
+    (Deno.env.get("APP_ORIGINS") ?? "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean),
+  );
+  const emailRedirectTo = getFarmerSignInRedirect(request.headers.get("Origin"), allowedHttpsOrigins);
+  if (!emailRedirectTo) {
+    return respond({ error: "This app URL is not allowed for farmer sign-in links. Open the approved app URL and try again." }, 400);
+  }
+
   const { data: created, error: createError } = await adminClient.auth.admin.createUser({
     email,
     email_confirm: false,
@@ -105,7 +134,7 @@ Deno.serve(async (request) => {
   });
   const { error: emailError } = await emailClient.auth.signInWithOtp({
     email,
-    options: { shouldCreateUser: false },
+    options: { shouldCreateUser: false, emailRedirectTo },
   });
 
   if (emailError) {
@@ -113,13 +142,13 @@ Deno.serve(async (request) => {
     return respond({
       farmer_id: created.user.id,
       email_sent: false,
-      message: "The account was created, but the email could not be sent. Ask the farmer to request a new code from the sign-in page.",
+      message: "The account was created, but the email could not be sent. Ask the farmer to request a new sign-in link from the sign-in page.",
     }, 201);
   }
 
   return respond({
     farmer_id: created.user.id,
     email_sent: true,
-    message: "The farmer account was created and a sign-in code was sent by email.",
+    message: "The farmer account was created and a sign-in link was sent by email.",
   }, 201);
 });

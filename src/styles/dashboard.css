@@ -142,6 +142,12 @@
   }
 }
 
+@keyframes dash-spin {
+  to { transform: rotate(360deg); }
+}
+
+.dash-spin { animation: dash-spin .9s linear infinite; }
+
 .dashboard-content > div > * {
   animation: dash-rise .5s cubic-bezier(.2, .7, .2, 1) both;
 }
@@ -534,6 +540,10 @@
   .rental-request-content > *,
   .camera-player-expanded {
     animation: none;
+  }
+
+  .dash-spin {
+    animation: dash-spin 1.4s linear infinite;
   }
 
   .dash-primary-link,

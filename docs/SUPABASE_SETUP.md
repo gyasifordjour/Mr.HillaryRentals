@@ -41,42 +41,62 @@ where id = '<auth-user-uuid>';
    Phone changes require SMS/phone confirmation to be enabled and configured
    for the Supabase project.
 
-## Add farmers and enable email-code sign-in
+## Add farmers and enable email-link sign-in
 
 Real farmer accounts are created by an administrator from **Admin → Farmers**.
 The administrator enters the farmer's name and email address; the server
-creates an email-auth user and sends a one-time sign-in code. Farmers use
-**Sign in with an email code** on the login page for their first sign-in and
-whenever they need another code. Password sign-in remains available for accounts
-that already have a password. Public sign-in does not create accounts.
+creates an email-auth user and sends a one-time magic sign-in link. Farmers
+open the link in their browser to sign in and arrive at their dashboard.
+Password sign-in remains available for accounts that already have a password.
+Public sign-in does not create accounts.
 
 Before using this workflow:
 
 1. In Supabase Dashboard → Authentication → Sign In / Providers, enable Email
-   sign-in. Configure a production SMTP provider and the email OTP template so
-   it includes the code variable `{{ .Token }}`. Configure authentication rate
-   limits in the Supabase Dashboard.
+   sign-in and configure a production SMTP provider. Keep the Magic Link email
+   template set up to use the confirmation URL (`{{ .ConfirmationURL }}`); a
+   code-only template using `{{ .Token }}` will not match the app's sign-in-link
+   flow. Configure authentication rate limits in the Supabase Dashboard.
 2. Apply the database migration that adds email addresses to farmer profiles.
-3. Deploy the admin-only Edge Function:
+3. In Authentication → URL Configuration, set the Site URL to your production
+   app URL and add the app's login redirect to the Redirect URLs allow-list.
+   For local Vite testing, allow `http://127.0.0.1:5173/**` (and
+   `http://localhost:5173/**` if you use that host). Add the equivalent
+   `https://<your-production-domain>/**` entry for the deployed site. The app
+   sends sign-in links to `/login?returnTo=%2Fdashboard`; Supabase only accepts
+   this redirect when its origin is allow-listed.
+4. Allow the same production app origin in the Edge Function. Origins must not
+   include a path or trailing slash; separate multiple origins with commas:
+
+   ```sh
+   supabase secrets set APP_ORIGINS="https://<your-production-domain>" --project-ref <project-ref>
+   ```
+
+   Localhost HTTP is permitted for development. If using another HTTPS origin,
+   add it to both this setting and Supabase's Redirect URLs.
+5. Deploy the admin-only Edge Functions after setting the URL configuration:
 
    ```sh
    supabase functions deploy create-farmer --project-ref <project-ref>
+   supabase functions deploy delete-farmer --project-ref <project-ref>
    ```
 
-   The function uses Supabase's server-side `SUPABASE_SERVICE_ROLE_KEY` to
-   verify that the caller is an administrator and create the Auth user. It
-   also uses the project URL and anon key to request the initial email code.
-   These are supplied to deployed Edge Functions by Supabase; do not add the
-   service-role key to `.env.local` or any `VITE_` variable.
-4. Ensure the administrator's profile has `role = 'admin'`. Test with an email
+   The functions use Supabase's server-side `SUPABASE_SERVICE_ROLE_KEY` to
+   verify that the caller is an administrator. `create-farmer` creates the Auth
+   user and requests the initial email link. `delete-farmer` permanently removes
+   the farmer's Auth user along with their rentals, payments, and service
+   requests, then releases any rooms that are no longer occupied by an active
+   rental. These are supplied to deployed Edge Functions by Supabase; do not add
+   the service-role key to `.env.local` or any `VITE_` variable.
+6. Ensure the administrator's profile has `role = 'admin'`. Test with an email
    address you control before onboarding a farmer.
 
 An account can be created even if the email provider rejects the initial
 message. The Admin → Farmers page reports this separately; the farmer can then
-request another code from the email sign-in form after the provider issue is
-resolved. Email addresses must be unique in Supabase Auth. If the project is in
-mock mode or Supabase is not configured, account creation is disabled and only
-temporary local preview accounts are available.
+request another sign-in link from the email sign-in form after the provider
+issue is resolved. Email addresses must be unique in Supabase Auth. If the
+project is in mock mode or Supabase is not configured, account creation is
+disabled and only temporary local preview accounts are available.
 
 Room requests, rental review, and service requests use database functions that
 validate the signed-in user and apply row-level security. Payment rows are
