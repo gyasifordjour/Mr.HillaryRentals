@@ -104,10 +104,19 @@ html {
 .landing-video {
   z-index: 0;
   display: block;
+  background: #132218 url("/landing/poster.jpg") center / cover no-repeat;
   transform: translate3d(calc(var(--landing-px, 0) * -18px), calc(var(--landing-py, 0) * -12px), 0) scale(1.03);
-  object-fit: cover;
-  object-position: center;
   will-change: transform;
+}
+
+.landing-video-source {
+  position: fixed;
+  top: -2px;
+  left: -2px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .landing-shade {
@@ -865,10 +874,6 @@ html {
 }
 
 @media (max-width: 639px) {
-  .landing-video {
-    object-fit: fill;
-  }
-
   .landing-scene {
     min-height: 100svh;
     gap: 38px;

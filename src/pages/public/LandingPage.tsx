@@ -216,24 +216,64 @@ function useCardTilt() {
   }, []);
 }
 
-function useLandingVideo(videoRef: React.RefObject<HTMLVideoElement | null>) {
+function useLandingVideo(
+  videoRef: React.RefObject<HTMLVideoElement | null>,
+  frameRef: React.RefObject<HTMLCanvasElement | null>,
+) {
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    const frame = frameRef.current;
+    if (!video || !frame) return;
 
     const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reduceMotion = motionPreference.matches;
     let smoothed = 0;
     let animationFrame = 0;
+    let previous = 0;
     let disposed = false;
 
-    const tick = () => {
-      if (disposed || reduceMotion) return;
+    const readProgress = () => {
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = maxScroll > 0
+      return maxScroll > 0
         ? Math.min(1, Math.max(0, window.scrollY / maxScroll))
         : 0;
-      smoothed += (progress - smoothed) * 0.12;
+    };
+
+    const drawCurrentFrame = () => {
+      if (video.readyState < 2 || video.seeking || !video.videoWidth || !video.videoHeight) return;
+      const targetTime = readProgress() * (video.duration - 0.05);
+      if (Math.abs(targetTime - video.currentTime) > 0.2) return;
+
+      const width = frame.clientWidth;
+      const height = frame.clientHeight;
+      if (!width || !height) return;
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      const pixelWidth = Math.max(1, Math.round(width * ratio));
+      const pixelHeight = Math.max(1, Math.round(height * ratio));
+      if (frame.width !== pixelWidth) frame.width = pixelWidth;
+      if (frame.height !== pixelHeight) frame.height = pixelHeight;
+
+      const context = frame.getContext("2d");
+      if (!context) return;
+      if (window.innerWidth <= 639) {
+        context.drawImage(video, 0, 0, pixelWidth, pixelHeight);
+        return;
+      }
+
+      const scale = Math.max(pixelWidth / video.videoWidth, pixelHeight / video.videoHeight);
+      const drawWidth = video.videoWidth * scale;
+      const drawHeight = video.videoHeight * scale;
+      context.drawImage(video, (pixelWidth - drawWidth) / 2, (pixelHeight - drawHeight) / 2, drawWidth, drawHeight);
+    };
+
+    const tick = (now: number) => {
+      animationFrame = 0;
+      if (disposed || reduceMotion) return;
+      const progress = readProgress();
+      const dt = previous ? Math.min(64, now - previous) : 16.7;
+      previous = now;
+      smoothed += (progress - smoothed) * (1 - Math.pow(.86, dt / 16.7));
+      if (Math.abs(progress - smoothed) < .0002) smoothed = progress;
 
       if (video.readyState >= 2 && Number.isFinite(video.duration) && video.duration > 0.05) {
         const targetTime = smoothed * (video.duration - 0.05);
@@ -242,7 +282,23 @@ function useLandingVideo(videoRef: React.RefObject<HTMLVideoElement | null>) {
         }
       }
 
-      animationFrame = requestAnimationFrame(tick);
+      if (Math.abs(progress - smoothed) >= .0002) {
+        animationFrame = requestAnimationFrame(tick);
+      } else {
+        previous = 0;
+      }
+    };
+
+    const scheduleTick = () => {
+      if (!disposed && !reduceMotion && !animationFrame) {
+        previous = 0;
+        animationFrame = requestAnimationFrame(tick);
+      }
+    };
+
+    const onVideoFrameReady = () => {
+      drawCurrentFrame();
+      scheduleTick();
     };
 
     const syncMotionPreference = () => {
@@ -252,6 +308,7 @@ function useLandingVideo(videoRef: React.RefObject<HTMLVideoElement | null>) {
       if (reduceMotion) {
         if (animationFrame) cancelAnimationFrame(animationFrame);
         animationFrame = 0;
+        previous = 0;
         video.removeAttribute("src");
         video.load();
         return;
@@ -260,7 +317,7 @@ function useLandingVideo(videoRef: React.RefObject<HTMLVideoElement | null>) {
       smoothed = 0;
       video.src = "/landing/hero.mp4";
       video.load();
-      if (!animationFrame) animationFrame = requestAnimationFrame(tick);
+      scheduleTick();
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -276,11 +333,21 @@ function useLandingVideo(videoRef: React.RefObject<HTMLVideoElement | null>) {
       .forEach((element) => observer.observe(element));
 
     syncMotionPreference();
+    window.addEventListener("scroll", scheduleTick, { passive: true });
+    window.addEventListener("resize", onVideoFrameReady);
+    video.addEventListener("loadedmetadata", onVideoFrameReady);
+    video.addEventListener("loadeddata", onVideoFrameReady);
+    video.addEventListener("seeked", onVideoFrameReady);
     motionPreference.addEventListener("change", syncMotionPreference);
 
     return () => {
       disposed = true;
       video.pause();
+      window.removeEventListener("scroll", scheduleTick);
+      window.removeEventListener("resize", onVideoFrameReady);
+      video.removeEventListener("loadedmetadata", onVideoFrameReady);
+      video.removeEventListener("loadeddata", onVideoFrameReady);
+      video.removeEventListener("seeked", onVideoFrameReady);
       motionPreference.removeEventListener("change", syncMotionPreference);
       observer.disconnect();
       if (animationFrame) cancelAnimationFrame(animationFrame);
@@ -290,8 +357,9 @@ function useLandingVideo(videoRef: React.RefObject<HTMLVideoElement | null>) {
 
 export default function LandingPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const frameRef = useRef<HTMLCanvasElement>(null);
   const { user } = useAuth();
-  useLandingVideo(videoRef);
+  useLandingVideo(videoRef, frameRef);
   useScrollProgress();
   usePointerParallax();
   useCardTilt();
@@ -316,8 +384,9 @@ export default function LandingPage() {
 
   return (
     <main className="landing-page" onClick={handleInPageClick}>
+      <canvas className="landing-video" ref={frameRef} aria-hidden="true" />
       <video
-        className="landing-video"
+        className="landing-video-source"
         ref={videoRef}
         muted
         playsInline
@@ -328,9 +397,9 @@ export default function LandingPage() {
       <div className="landing-shade" aria-hidden="true" />
 
       <nav className="landing-nav" aria-label="Primary navigation">
-        <Link to="/" className="landing-brand" aria-label="FarmRent home">
+        <Link to="/" className="landing-brand" aria-label="Trinity Integrated Farms home">
           <span className="landing-brand-mark"><Hexagon size={21} strokeWidth={1.7} /></span>
-          FarmRent
+          Trinity Integrated Farms
         </Link>
         <div className="landing-nav-links">
           <a href="#rooms">Rooms</a>
@@ -458,7 +527,7 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-          <footer className="landing-footer landing-reveal"><Link to="/">FarmRent</Link><span>Space to farm. Confidence to grow.</span><Link to="/rooms">Browse rooms <ArrowRight size={13} /></Link></footer>
+          <footer className="landing-footer landing-reveal"><Link to="/">Trinity Integrated Farms</Link><span>Space to farm. Confidence to grow.</span><Link to="/rooms">Browse rooms <ArrowRight size={13} /></Link></footer>
         </section>
       </div>
     </main>

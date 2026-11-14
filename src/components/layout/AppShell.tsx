@@ -33,7 +33,7 @@ export default function AppShell() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success("Signed out", "You have been signed out of FarmRent.");
+      toast.success("Signed out", "You have been signed out of Trinity Integrated Farms.");
       navigate("/", { replace: true });
     } catch (error) {
       toast.error("Sign out failed", error instanceof Error ? error.message : "Unable to sign out. Please try again.");
@@ -45,7 +45,7 @@ export default function AppShell() {
       <aside className="dashboard-sidebar">
         <Link to="/" className="dashboard-brand">
           <span className="dashboard-brand-mark"><PiggyBank size={20} /></span>
-          <span>FarmRent<small>FARM PLATFORM</small></span>
+          <span>Trinity Integrated Farms<small>FARM PLATFORM</small></span>
         </Link>
         <div className="dashboard-nav-label">WORKSPACE</div>
         <nav className="dashboard-nav" aria-label="Dashboard navigation">

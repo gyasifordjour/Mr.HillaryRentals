@@ -36,7 +36,7 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await signIn(identifier, password);
-      toast.success("Signed in", "Welcome back to FarmRent.");
+      toast.success("Signed in", "Welcome back to Trinity Integrated Farms.");
     } catch (reason) {
       toast.error("Sign-in failed", reason instanceof Error ? reason.message : "We couldn't sign you in. Please try again.");
     } finally {
@@ -57,9 +57,9 @@ export default function LoginPage() {
     <main className="login-page">
       <section className="login-form-side">
         <header className="login-topbar">
-          <Link to="/" className="login-brand" aria-label="FarmRent home">
+          <Link to="/" className="login-brand" aria-label="Trinity Integrated Farms home">
             <span className="login-brand-mark"><Sprout size={19} strokeWidth={2} /></span>
-            <span>FarmRent</span>
+            <span>Trinity Integrated Farms</span>
           </Link>
           <div className="login-topbar-actions">
             <Link to="/rooms" className="login-back-link"><ArrowLeft size={15} /> Browse rooms</Link>
@@ -165,12 +165,12 @@ export default function LoginPage() {
         </div>
 
         <footer className="login-foot">
-          <span>© {new Date().getFullYear()} FarmRent</span>
+          <span>© {new Date().getFullYear()} Trinity Integrated Farms</span>
           <span>Space to farm. Confidence to grow.</span>
         </footer>
       </section>
 
-      <aside className="login-art-side" aria-label="FarmRent services">
+      <aside className="login-art-side" aria-label="Trinity Integrated Farms services">
         <div className="login-art-glow" />
         <div className="login-art-copy">
           <span className="login-art-kicker"><span /> MORE THAN A ROOM</span>
@@ -179,7 +179,7 @@ export default function LoginPage() {
         </div>
 
         <div className="login-farm-illustration">
-          <img className="login-farm-photo" src={FARM_FIELD_PHOTO} alt="Illustrative stock photo of a farm field; not a FarmRent site photo" />
+          <img className="login-farm-photo" src={FARM_FIELD_PHOTO} alt="Illustrative stock photo of a farm field; not a Trinity Integrated Farms site photo" />
         </div>
 
         <div className="login-feature-card">
