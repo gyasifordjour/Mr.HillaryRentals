@@ -8,6 +8,8 @@ import { useMocks } from "@/lib/supabase";
 import { formatGHS } from "@/lib/utils";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { useToast } from "@/components/ui/ToastProvider";
+import "@/styles/dashboard.css";
+import "@/styles/rooms.css";
 
 function localDate(date: Date) {
   const year = date.getFullYear();

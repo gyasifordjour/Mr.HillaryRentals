@@ -53,8 +53,8 @@ export default function FarmerSignupPage() {
         <div className="login-content">
           <div className="login-heading">
             <span className="login-eyebrow"><span /> START YOUR FARM JOURNEY</span>
-            <h1>Create your account.</h1>
-            <p>Save your details and continue with your room request.</p>
+            <h1>{useDemoAuth ? "Create your account." : "Get started."}</h1>
+            <p>{useDemoAuth ? "Save your details and continue with your room request." : "Ask the farm administrator to set up your secure sign-in."}</p>
           </div>
 
           {useDemoAuth ? (
@@ -74,16 +74,17 @@ export default function FarmerSignupPage() {
                 </div>
 
                 <p className="login-config-note">
-                  <span>This creates a temporary local preview account only. It is not saved to a server or verified by SMS.</span>
+                  <span>This creates a temporary local preview account only. It is not saved to a server or verified.</span>
                 </p>
                 <button className="login-submit" type="submit">Continue to request <ArrowRight size={17} /></button>
               </form>
               <p className="login-account-help">Already have an account? <Link to={`/login?returnTo=${encodeURIComponent(returnTo)}`}>Sign in</Link></p>
             </>
           ) : (
-            <p className="login-message login-notice" role="status">
-              Farmer account registration is not connected yet. Contact the farm administrator to set up an account.
-            </p>
+            <div className="login-message login-notice" role="status">
+              <p>Farmer accounts are set up by the farm administrator. Ask them to add your name and email address. When you receive an email code, return here and choose <strong>Sign in with an email code</strong>.</p>
+              <Link className="login-back-link" to={`/login?returnTo=${encodeURIComponent(returnTo)}`}>Go to sign in <ArrowRight size={15} /></Link>
+            </div>
           )}
         </div>
 

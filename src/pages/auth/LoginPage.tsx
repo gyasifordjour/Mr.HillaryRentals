@@ -12,9 +12,12 @@ import "@/styles/login.css";
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [emailCode, setEmailCode] = useState("");
+  const [emailCodeSent, setEmailCodeSent] = useState(false);
+  const [loginMethod, setLoginMethod] = useState<"password" | "email">("password");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
-  const { user, signIn, signInAsDemo } = useAuth();
+  const { user, signIn, requestEmailSignInCode, verifyEmailSignInCode, signInAsDemo } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -28,20 +31,51 @@ export default function LoginPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!identifier.trim() || !password) {
-      toast.error("Missing details", "Enter your email or phone number and password to continue.");
+    if (!identifier.trim() || (loginMethod === "password" && !password) || (loginMethod === "email" && emailCodeSent && !emailCode.trim())) {
+      toast.error("Missing details", loginMethod === "email" ? "Enter your email address and verification code to continue." : "Enter your email or phone number and password to continue.");
       return;
     }
 
     setBusy(true);
     try {
-      await signIn(identifier, password);
-      toast.success("Signed in", "Welcome back to Trinity Integrated Farms.");
+      if (loginMethod === "email") {
+        if (!identifier.includes("@")) throw new Error("Enter the email address linked to your farmer account.");
+        if (!emailCodeSent) {
+          await requestEmailSignInCode(identifier);
+          setEmailCodeSent(true);
+          toast.success("Code sent", "Check your email for a sign-in code.");
+        } else {
+          await verifyEmailSignInCode(identifier, emailCode);
+          toast.success("Signed in", "Welcome back to Trinity Integrated Farms.");
+        }
+      } else {
+        await signIn(identifier, password);
+        toast.success("Signed in", "Welcome back to Trinity Integrated Farms.");
+      }
     } catch (reason) {
-      toast.error("Sign-in failed", reason instanceof Error ? reason.message : "We couldn't sign you in. Please try again.");
+      toast.error(loginMethod === "email" ? "Email sign-in failed" : "Sign-in failed", reason instanceof Error ? reason.message : "We couldn't sign you in. Please try again.");
     } finally {
       setBusy(false);
     }
+  };
+
+  const requestAnotherCode = async () => {
+    setBusy(true);
+    try {
+      await requestEmailSignInCode(identifier);
+      toast.success("Code sent", "A new sign-in code was sent to your email.");
+    } catch (reason) {
+      toast.error("Code not sent", reason instanceof Error ? reason.message : "We couldn't send another code.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleLoginMethod = () => {
+    if (loginMethod === "password" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) setIdentifier("");
+    setLoginMethod((method) => method === "password" ? "email" : "password");
+    setEmailCodeSent(false);
+    setEmailCode("");
   };
 
   const handleDemoSignIn = (role: Role) => {
@@ -75,55 +109,85 @@ export default function LoginPage() {
           </div>
 
           <form className="login-form" onSubmit={handleSubmit} noValidate>
-            <label htmlFor="login-identifier">Email or phone number</label>
+            <label htmlFor="login-identifier">{loginMethod === "email" ? "Email address" : "Email or phone number"}</label>
             <div className="login-input-wrap">
-              {identifier.includes("@") ? <AtSign size={18} aria-hidden="true" /> : <span className="login-country-code" aria-hidden="true">GH</span>}
+              {identifier.includes("@") || loginMethod === "email" ? <AtSign size={18} aria-hidden="true" /> : <span className="login-country-code" aria-hidden="true">GH</span>}
               <input
-                autoComplete="username"
+                autoComplete={loginMethod === "email" ? "email" : "username"}
                 id="login-identifier"
                 inputMode="email"
                 name="identifier"
                 onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="Email or 024 123 4567"
-                type="text"
+                placeholder={loginMethod === "email" ? "farmer@example.com" : "Email or 024 123 4567"}
+                readOnly={loginMethod === "email" && emailCodeSent}
+                type={loginMethod === "email" ? "email" : "text"}
                 value={identifier}
                 required
               />
             </div>
 
-            <div className="login-password-label">
-              <label htmlFor="login-password">Password</label>
-              <button
-                className="login-forgot"
-                onClick={() => {
-                  toast.info("Password reset", "Contact your farm administrator. SMS recovery will be available once OTP delivery is configured.");
-                }}
-                type="button"
-              >
-                Forgot password?
-              </button>
-            </div>
-            <div className="login-input-wrap">
-              <LockKeyhole size={18} aria-hidden="true" />
-              <input
-                autoComplete="current-password"
-                id="login-password"
-                name="password"
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Enter your password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                required
-              />
-              <button
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                className="login-password-toggle"
-                onClick={() => setShowPassword((visible) => !visible)}
-                type="button"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
+            {loginMethod === "password" ? (
+              <>
+                <div className="login-password-label">
+                  <label htmlFor="login-password">Password</label>
+                  <button
+                    className="login-forgot"
+                    onClick={() => {
+                      toast.info("Password reset", "Contact your farm administrator. Use email-code sign-in if your account was created by the administrator.");
+                    }}
+                    type="button"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <div className="login-input-wrap">
+                  <LockKeyhole size={18} aria-hidden="true" />
+                  <input
+                    autoComplete="current-password"
+                    id="login-password"
+                    name="password"
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Enter your password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    required
+                  />
+                  <button
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="login-password-toggle"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    type="button"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </>
+            ) : emailCodeSent ? (
+              <>
+                <div className="login-password-label">
+                  <label htmlFor="login-email-code">Email verification code</label>
+                  <button className="login-forgot" disabled={busy} onClick={() => void requestAnotherCode()} type="button">Resend code</button>
+                </div>
+                <div className="login-input-wrap">
+                  <input
+                    autoComplete="one-time-code"
+                    id="login-email-code"
+                    inputMode="numeric"
+                    name="emailCode"
+                    onChange={(event) => setEmailCode(event.target.value)}
+                    placeholder="Enter the code from your email"
+                    type="text"
+                    value={emailCode}
+                    required
+                  />
+                </div>
+              </>
+            ) : (
+              <p className="login-config-note">
+                <ShieldCheck size={17} />
+                <span>Only email addresses already set up by the farm administrator can receive a sign-in code.</span>
+              </p>
+            )}
 
             {useDemoAuth && (
               <p className="login-config-note">
@@ -133,9 +197,14 @@ export default function LoginPage() {
             )}
 
             <button className="login-submit" disabled={busy || useMocks} type="submit">
-              {busy ? "Signing in..." : "Sign in"}
+              {busy ? (emailCodeSent ? "Verifying..." : loginMethod === "email" ? "Sending code..." : "Signing in...") : loginMethod === "email" ? (emailCodeSent ? "Verify and sign in" : "Send sign-in code") : "Sign in"}
               {!busy && <ArrowRight size={17} />}
             </button>
+            {!useMocks && (
+              <button className="login-method-toggle" disabled={busy} onClick={toggleLoginMethod} type="button">
+                {loginMethod === "email" ? "Use password instead" : "Sign in with an email code"}
+              </button>
+            )}
           </form>
 
           {useDemoAuth && (
@@ -160,7 +229,7 @@ export default function LoginPage() {
             <span>Your account and camera access are protected.</span>
           </div>
           <p className="login-account-help">
-            Need an account? <Link to={`/signup?returnTo=${encodeURIComponent(returnTo ?? "/rooms")}`}>Create a farmer account</Link>
+            Need an account? <Link to={`/signup?returnTo=${encodeURIComponent(returnTo ?? "/rooms")}`}>{useDemoAuth ? "Create a preview account" : "Contact the farm administrator"}</Link>
           </p>
         </div>
 

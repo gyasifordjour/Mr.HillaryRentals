@@ -6,6 +6,8 @@ import type { Profile, Role } from "@/types";
 interface AuthState {
   user: Profile | null;
   signIn: (identifier: string, password: string) => Promise<void>;
+  requestEmailSignInCode: (email: string) => Promise<void>;
+  verifyEmailSignInCode: (email: string, token: string) => Promise<void>;
   signInAsDemo: (role: Role) => void;
   registerDemoFarmer: (details: Pick<Profile, "full_name" | "phone">) => Profile;
   updateDemoProfile: (details: Pick<Profile, "full_name" | "phone">) => void;
@@ -31,7 +33,7 @@ function isRole(value: unknown): value is Role {
   return value === "admin" || value === "farmer";
 }
 
-async function fetchProfile(id: string): Promise<Profile> {
+async function fetchProfile(id: string, email: string | null = null): Promise<Profile> {
   const { data: profile, error } = await supabase
     .from("profiles")
     .select("id, full_name, phone, role, avatar_path")
@@ -46,7 +48,7 @@ async function fetchProfile(id: string): Promise<Profile> {
     ? await supabase.storage.from("profile-avatars").createSignedUrl(profile.avatar_path, 3600)
     : null;
   if (avatarUrl?.error) throw avatarUrl.error;
-  return { ...profile, avatar_url: avatarUrl?.data.signedUrl ?? null };
+  return { ...profile, phone: profile.phone ?? "", email, avatar_url: avatarUrl?.data.signedUrl ?? null };
 }
 
 function validateAvatar(image: File) {
@@ -72,9 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (useMocks) return;
 
     let active = true;
-    const restoreUser = async (id: string) => {
+    const restoreUser = async (id: string, email: string | null) => {
       try {
-        const profile = await fetchProfile(id);
+        const profile = await fetchProfile(id, email);
         if (active) setUser(profile);
       } catch (error) {
         console.error("Unable to load the signed-in user's profile.", error);
@@ -84,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     void supabase.auth.getSession().then(({ data, error }) => {
       if (error) throw error;
-      if (data.session) void restoreUser(data.session.user.id);
+      if (data.session) void restoreUser(data.session.user.id, data.session.user.email ?? null);
     }).catch((error: unknown) => {
       console.error("Unable to restore the Supabase session.", error);
     });
@@ -94,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         return;
       }
-      queueMicrotask(() => void restoreUser(session.user.id));
+      queueMicrotask(() => void restoreUser(session.user.id, session.user.email ?? null));
     });
 
     return () => {
@@ -117,7 +119,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!authData.user) throw new Error("Supabase did not return a signed-in user.");
 
     try {
-      const profile = await fetchProfile(authData.user.id);
+      const profile = await fetchProfile(authData.user.id, authData.user.email ?? null);
+      setUser(profile);
+    } catch (profileError) {
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) throw signOutError;
+      throw profileError;
+    }
+  };
+  const requestEmailSignInCode = async (email: string) => {
+    if (useMocks) throw new Error("Email-code sign-in requires a configured Supabase project.");
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim().toLowerCase(),
+      options: { shouldCreateUser: false },
+    });
+    if (error) throw error;
+  };
+  const verifyEmailSignInCode = async (email: string, token: string) => {
+    if (useMocks) throw new Error("Email-code sign-in requires a configured Supabase project.");
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: email.trim().toLowerCase(),
+      token: token.trim(),
+      type: "email",
+    });
+    if (error) throw error;
+    if (!data.user) throw new Error("Email verification did not return an authenticated user.");
+
+    try {
+      const profile = await fetchProfile(data.user.id, data.user.email ?? null);
       setUser(profile);
     } catch (profileError) {
       const { error: signOutError } = await supabase.auth.signOut();
@@ -179,7 +208,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .single();
     if (error) throw error;
     if (!data || !isRole(data.role)) throw new Error("The profile was not updated.");
-    setUser({ ...data, avatar_url: user.avatar_url });
+    setUser({ ...data, phone: data.phone ?? "", email: user.email ?? null, avatar_url: user.avatar_url });
   };
 
   const updateAvatar = async (image: File | null) => {
@@ -223,7 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const previousPath = user.avatar_path;
-    const updatedUser = await fetchProfile(user.id);
+    const updatedUser = await fetchProfile(user.id, user.email ?? null);
     setUser(updatedUser);
     if (previousPath) {
       const { error } = await supabase.storage.from("profile-avatars").remove([previousPath]);
@@ -256,7 +285,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .single();
     if (profileError) throw profileError;
     if (!profile || !isRole(profile.role)) throw new Error("The verified phone number could not be saved to your profile.");
-    setUser(profile);
+    setUser({ ...profile, phone: profile.phone ?? "", email: user.email ?? null });
   };
 
   const changePassword = async (currentPassword: string, newPassword: string) => {
@@ -287,6 +316,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={{
     user,
     signIn,
+    requestEmailSignInCode,
+    verifyEmailSignInCode,
     signInAsDemo,
     registerDemoFarmer,
     updateDemoProfile,

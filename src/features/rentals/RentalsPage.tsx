@@ -120,7 +120,7 @@ export default function RentalsPage() {
                       <h2>{isAdmin ? rental.owner?.full_name || "Farmer" : `Rental ${rental.id.toUpperCase()}`}</h2>
                       <span className={`dash-badge ${rental.status === "active" ? "green" : rental.status === "pending" ? "amber" : ""}`}>{statusLabel(rental.status)}</span>
                     </div>
-                    <p>{isAdmin ? rental.owner?.phone || "Farmer account" : `${rental.rooms.length} ${rental.rooms.length === 1 ? "room" : "rooms"} requested`} <span>·</span> {rental.farmName}</p>
+                    <p>{isAdmin ? rental.owner?.email || rental.owner?.phone || "Farmer account" : `${rental.rooms.length} ${rental.rooms.length === 1 ? "room" : "rooms"} requested`} <span>·</span> {rental.farmName}</p>
                   </div>
                   {isAdmin && <span className="dash-rental-reference">REF {rental.id.toUpperCase()}</span>}
                 </div>

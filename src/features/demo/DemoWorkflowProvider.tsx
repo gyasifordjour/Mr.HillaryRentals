@@ -103,7 +103,7 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setLoadError("");
     try {
-      const [farmResult, roomResult, cameraResult, rentalResult, rentalRoomResult, serviceResult, paymentResult, profileResult] = await Promise.all([
+      const [farmResult, roomResult, cameraResult, rentalResult, rentalRoomResult, serviceResult, paymentResult, profileResultWithEmail] = await Promise.all([
         supabase.from("farms").select("id, name, location, description"),
         supabase.from("room_availability").select("id, farm_id, room_number, capacity, monthly_price, status, image_path"),
         user ? supabase.from("cameras").select("id, room_id, name, status") : Promise.resolve({ data: [], error: null }),
@@ -111,8 +111,14 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
         user ? supabase.from("rental_rooms").select("rental_id, room_id") : Promise.resolve({ data: [], error: null }),
         user ? supabase.from("service_requests").select("id, farmer_id, rental_id, service, preferred_date, note, status") : Promise.resolve({ data: [], error: null }),
         user ? supabase.from("payments").select("id, farmer_id, rental_id, payment_date, description, amount, status, reference") : Promise.resolve({ data: [], error: null }),
-        user ? supabase.from("profiles").select("id, full_name, phone, role") : Promise.resolve({ data: [], error: null }),
+        user ? supabase.from("profiles").select("id, full_name, phone, email, role") : Promise.resolve({ data: [], error: null }),
       ]);
+
+      let profileResult = profileResultWithEmail;
+      if (profileResult.error?.code === "42703") {
+        console.warn("The profiles.email migration is not applied; farmer emails are omitted from admin listings.");
+        profileResult = await supabase.from("profiles").select("id, full_name, phone, role");
+      }
 
       const results = [farmResult, roomResult, cameraResult, rentalResult, rentalRoomResult, serviceResult, paymentResult, profileResult];
       const failed = results.find((result) => result.error);

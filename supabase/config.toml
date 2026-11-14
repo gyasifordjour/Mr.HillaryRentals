@@ -12,3 +12,6 @@ major_version = 15
 [db.seed]
 enabled = true
 sql_paths = ["./seed.sql"]
+
+[functions.create-farmer]
+verify_jwt = true

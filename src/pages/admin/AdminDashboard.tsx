@@ -58,6 +58,31 @@ export default function AdminDashboard() {
         </section>
       </div>
 
+      <section className="dash-panel dash-camera-access" aria-labelledby="admin-camera-access-title" style={{ marginTop: 17 }}>
+        <div className="dash-panel-head"><h2 id="admin-camera-access-title">My Cameras</h2><span className="dash-badge green"><Camera size={13} /> HIK-CONNECT</span></div>
+        <div className="dash-panel-body">
+          <div className="dash-camera-access-content">
+            <span className="dash-camera-access-icon"><Camera size={21} /></span>
+            <div className="dash-camera-access-copy">
+              <strong>Manage and review CCTV access for the farms and rooms under your supervision.</strong>
+              <p>Use your administrator Hik-Connect account to access shared cameras and manage farm access permissions.</p>
+            </div>
+            <a
+              className="dash-primary-link dash-camera-access-button"
+              href="https://ieu.hik-connect.com/views/login/index.html#/login"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Camera size={16} /> View My Cameras
+            </a>
+          </div>
+          <p className="dash-camera-access-note">
+            If the new tab does not open, <a href="https://ieu.hik-connect.com/views/login/index.html#/login" target="_blank" rel="noopener noreferrer">open Hik-Connect directly</a>.
+            {" "}This opens the official Hik-Connect portal; no credentials are stored in the SK Technologies app.
+          </p>
+        </div>
+      </section>
+
       <section className="dash-panel" style={{ marginTop: 17 }}>
         <div className="dash-panel-head"><h2>Rental overview</h2><Link to="/admin/rentals">Manage rentals <ArrowRight size={13} /></Link></div>
         {activeRentals.length ? (
@@ -66,7 +91,7 @@ export default function AdminDashboard() {
               <thead><tr><th>FARMER</th><th>START DATE</th><th>END DATE</th><th>STATUS</th></tr></thead>
               <tbody>{activeRentals.map((rental) => {
                 const farmer = farmers.find((profile) => profile.id === rental.farmer_id);
-                return <tr key={rental.id}><td><strong>{farmer?.full_name || "Farmer"}</strong><small>{farmer?.phone || "—"}</small></td><td>{rental.start_date}</td><td>{rental.end_date}</td><td><span className="dash-badge green">Active</span></td></tr>;
+                return <tr key={rental.id}><td><strong>{farmer?.full_name || "Farmer"}</strong><small>{farmer?.email || farmer?.phone || "—"}</small></td><td>{rental.start_date}</td><td>{rental.end_date}</td><td><span className="dash-badge green">Active</span></td></tr>;
               })}</tbody>
             </table>
           </div>

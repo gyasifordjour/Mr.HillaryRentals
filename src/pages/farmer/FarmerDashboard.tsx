@@ -84,6 +84,30 @@ export default function FarmerDashboard() {
           </div>
         </section>
       </div>
+      <section className="dash-panel dash-camera-access" aria-labelledby="dash-camera-access-title">
+        <div className="dash-panel-head"><h2 id="dash-camera-access-title">My Cameras</h2><span className="dash-badge green"><Camera size={13} /> HIK-CONNECT</span></div>
+        <div className="dash-panel-body">
+          <div className="dash-camera-access-content">
+            <span className="dash-camera-access-icon"><Camera size={21} /></span>
+            <div className="dash-camera-access-copy">
+              <strong>Access and monitor the CCTV cameras assigned to your rented rooms.</strong>
+              <p>Sign in with your own Hik-Connect account. Camera access is managed separately by the farm administrator.</p>
+            </div>
+            <a
+              className="dash-primary-link dash-camera-access-button"
+              href="https://ieu.hik-connect.com/views/login/index.html#/login"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Camera size={16} /> View My Cameras
+            </a>
+          </div>
+          <p className="dash-camera-access-note">
+            If the new tab does not open, <a href="https://ieu.hik-connect.com/views/login/index.html#/login" target="_blank" rel="noopener noreferrer">open Hik-Connect directly</a>.
+            {" "}On your phone, you can optionally use the Hik-Connect mobile app; browser access remains available.
+          </p>
+        </div>
+      </section>
       <p className="dash-demo-note">{useMocks ? "Dashboard figures are sample data. " : ""}Room photos are illustrative stock images, not photos of your rental.</p>
     </div>
   );

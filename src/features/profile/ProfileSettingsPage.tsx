@@ -141,9 +141,14 @@ export default function ProfileSettingsPage() {
                 <div className="dash-form-input-icon"><UserRound size={16} /><input autoComplete="name" value={fullName} onChange={(event) => setFullName(event.target.value)} required /></div>
               </label>
               <label className="dash-form-field">
-                <span>Sign-in phone number</span>
-                <div className="dash-form-input-icon"><Phone size={16} /><input autoComplete="tel" inputMode="tel" value={phone} onChange={(event) => setPhone(event.target.value)} readOnly={useMocks} required /></div>
-                <small>{useMocks ? "Phone number changes require a connected Supabase account." : "Changing this number requires SMS verification."}</small>
+                <span>Sign-in email</span>
+                <input autoComplete="email" type="email" value={user?.email ?? ""} readOnly />
+                <small>Email changes must be handled through the account administrator.</small>
+              </label>
+              <label className="dash-form-field">
+                <span>Optional phone number</span>
+                <div className="dash-form-input-icon"><Phone size={16} /><input autoComplete="tel" inputMode="tel" value={phone} onChange={(event) => setPhone(event.target.value)} readOnly={useMocks} /></div>
+                <small>{useMocks ? "Phone number changes require a connected Supabase account." : "Adding or changing a phone number requires SMS verification below."}</small>
               </label>
               <label className="dash-form-field">
                 <span>Account role</span>

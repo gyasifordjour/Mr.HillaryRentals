@@ -20,6 +20,55 @@
   text-decoration: none;
 }
 
+@keyframes rooms-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rooms-hero-copy > * {
+  animation: rooms-rise .6s cubic-bezier(.2, .7, .2, 1) both;
+}
+
+.rooms-hero-copy > *:nth-child(1) { animation-delay: .04s; }
+.rooms-hero-copy > *:nth-child(2) { animation-delay: .1s; }
+.rooms-hero-copy > *:nth-child(3) { animation-delay: .16s; }
+.rooms-hero-copy > *:nth-child(4) { animation-delay: .22s; }
+
+.rooms-hero-art {
+  animation: rooms-rise .8s cubic-bezier(.2, .7, .2, 1) .16s both;
+}
+
+.rooms-catalog-head {
+  animation: rooms-rise .6s cubic-bezier(.2, .7, .2, 1) .08s both;
+}
+
+.rooms-toolbar {
+  animation: rooms-rise .6s cubic-bezier(.2, .7, .2, 1) .14s both;
+}
+
+.rooms-grid .room-card {
+  animation: rooms-rise .55s cubic-bezier(.2, .7, .2, 1) both;
+}
+
+.rooms-grid .room-card:nth-child(1) { animation-delay: .18s; }
+.rooms-grid .room-card:nth-child(2) { animation-delay: .24s; }
+.rooms-grid .room-card:nth-child(3) { animation-delay: .3s; }
+.rooms-grid .room-card:nth-child(4) { animation-delay: .36s; }
+.rooms-grid .room-card:nth-child(5) { animation-delay: .42s; }
+.rooms-grid .room-card:nth-child(n + 6) { animation-delay: .48s; }
+
+.rooms-help > * {
+  animation: rooms-rise .6s cubic-bezier(.2, .7, .2, 1) both;
+}
+
+.rooms-help > *:nth-child(2) { animation-delay: .1s; }
+
 .rooms-nav {
   position: relative;
   z-index: 1;
@@ -469,10 +518,11 @@
 .room-request-button {
   background: #315b3b;
   color: #fff !important;
-  transition: background .2s, transform .2s;
+  transition: background .2s, transform .2s, box-shadow .2s;
 }
 
-.room-request-button:hover { transform: translateY(-1px); background: #24482e; }
+.room-request-button:hover { transform: translateY(-1px); background: #24482e; box-shadow: 0 6px 16px rgba(36, 72, 46, .2); }
+.room-request-button:active { transform: translateY(0); box-shadow: none; }
 .room-unavailable-button { background: #f0f2ed; color: #869083; }
 
 .rooms-empty {
@@ -536,7 +586,10 @@
   color: white !important;
   font-size: 12px;
   font-weight: 500;
+  transition: background .2s, transform .2s, box-shadow .2s;
 }
+
+.rooms-help-button:hover { transform: translateY(-1px); background: #24482e; box-shadow: 0 6px 16px rgba(36, 72, 46, .2); }
 
 .rooms-footer {
   display: flex;
@@ -591,7 +644,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .rooms-hero-copy > *,
+  .rooms-hero-art,
+  .rooms-catalog-head,
+  .rooms-toolbar,
+  .rooms-grid .room-card,
+  .rooms-help > * {
+    animation: none;
+  }
+
   .room-card,
   .room-illustration,
-  .room-request-button { transition: none; }
+  .room-request-button,
+  .rooms-help-button { transition: none; }
+
+  .room-card:hover,
+  .room-request-button:hover,
+  .rooms-help-button:hover { transform: none; }
 }

@@ -18,6 +18,30 @@ export default function AdminCameras() {
         <span className="dash-badge green"><ShieldCheck size={13} /> ADMIN ACCESS</span>
       </header>
 
+      <section className="dash-panel" aria-labelledby="admin-hik-connect-title" style={{ marginBottom: 18 }}>
+        <div className="dash-panel-head"><h2 id="admin-hik-connect-title">My Cameras</h2><span className="dash-badge green"><Camera size={13} /> HIK-CONNECT</span></div>
+        <div className="dash-panel-body">
+          <div className="dash-camera-access-content">
+            <span className="dash-camera-access-icon"><Camera size={21} /></span>
+            <div className="dash-camera-access-copy">
+              <strong>Open the official Hik-Connect portal to access cameras shared with your administrator account.</strong>
+              <p>Camera sharing and permissions are managed separately in Hik-Connect.</p>
+            </div>
+            <a
+              className="dash-primary-link dash-camera-access-button"
+              href="https://ieu.hik-connect.com/views/login/index.html#/login"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Camera size={16} /> View My Cameras
+            </a>
+          </div>
+          <p className="dash-camera-access-note">
+            If the new tab does not open, <a href="https://ieu.hik-connect.com/views/login/index.html#/login" target="_blank" rel="noopener noreferrer">open Hik-Connect directly</a>.
+          </p>
+        </div>
+      </section>
+
       <section className="dash-stats dash-stats-3" aria-label="Camera status summary">
         <article className="dash-stat-card"><div className="dash-stat-top">Registered cameras<span className="dash-stat-icon"><Camera size={17} /></span></div><strong>{cameras.length}</strong><small>Assigned to farm rooms</small></article>
         <article className="dash-stat-card"><div className="dash-stat-top">Online<span className="dash-stat-icon"><Camera size={17} /></span></div><strong>{onlineCount}</strong><small>Showing online in sample data</small></article>
