@@ -12,11 +12,11 @@ import "@/styles/login.css";
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [emailLinkSent, setEmailLinkSent] = useState(false);
-  const [loginMethod, setLoginMethod] = useState<"password" | "email">("password");
+  const [resetMode, setResetMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
-  const { user, signIn, requestEmailSignInLink, signInAsDemo } = useAuth();
+  const { user, signIn, requestPasswordReset, signInAsDemo } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -24,39 +24,58 @@ export default function LoginPage() {
   const returnTo = requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//") ? requestedReturnTo : null;
 
   useEffect(() => {
-    if (user) navigate(user.role === "admin" ? "/admin" : returnTo ?? "/dashboard", { replace: true });
+    if (user) navigate(
+      user.must_change_password ? "/change-password" : user.role === "admin" ? "/admin" : returnTo ?? "/dashboard",
+      { replace: true },
+    );
   }, [navigate, returnTo, user]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!identifier.trim() || (loginMethod === "password" && !password)) {
-      toast.error("Missing details", loginMethod === "email" ? "Enter your email address to continue." : "Enter your email or phone number and password to continue.");
+    if (resetMode) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) {
+        toast.error("Email required", "Enter the email address linked to your account.");
+        return;
+      }
+      setBusy(true);
+      try {
+        await requestPasswordReset(identifier);
+        setResetSent(true);
+        toast.success("Reset link sent", "Check your email and open the link to choose a new password.");
+      } catch (reason) {
+        toast.error("Reset link not sent", reason instanceof Error ? reason.message : "We couldn't send the reset link. Please try again.");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    if (!identifier.trim() || !password) {
+      toast.error("Missing details", "Enter your email or phone number and password to continue.");
       return;
     }
 
     setBusy(true);
     try {
-      if (loginMethod === "email") {
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) throw new Error("Enter the email address linked to your farmer account.");
-        await requestEmailSignInLink(identifier);
-        setEmailLinkSent(true);
-        toast.success("Sign-in link sent", "Check your email and open the link to sign in.");
-      } else {
-        await signIn(identifier, password);
-        toast.success("Signed in", "Welcome back to Trinity Integrated Farms.");
-      }
+      await signIn(identifier, password);
+      toast.success("Signed in", "Welcome back to Trinity Integrated Farms.");
     } catch (reason) {
-      toast.error(loginMethod === "email" ? "Email sign-in failed" : "Sign-in failed", reason instanceof Error ? reason.message : "We couldn't sign you in. Please try again.");
+      toast.error("Sign-in failed", reason instanceof Error ? reason.message : "We couldn't sign you in. Please try again.");
     } finally {
       setBusy(false);
     }
   };
 
-  const toggleLoginMethod = () => {
-    if (loginMethod === "password" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) setIdentifier("");
-    setLoginMethod((method) => method === "password" ? "email" : "password");
-    setEmailLinkSent(false);
+  const startPasswordReset = () => {
+    setResetMode(true);
+    setResetSent(false);
+    setPassword("");
+  };
+
+  const exitPasswordReset = () => {
+    setResetMode(false);
+    setResetSent(false);
   };
 
   const handleDemoSignIn = (role: Role) => {
@@ -85,39 +104,42 @@ export default function LoginPage() {
         <div className="login-content">
           <div className="login-heading">
             <span className="login-eyebrow"><span /> YOUR FARM, CLOSE AT HAND</span>
-            <h1>Welcome back.</h1>
-            <p>Sign in to manage your rental and check in on your pigs.</p>
+            <h1>{resetMode ? "Reset your password." : "Welcome back."}</h1>
+            <p>{resetMode ? "We'll email you a secure link to choose a new password." : "Sign in to manage your rental and check in on your pigs."}</p>
           </div>
 
           <form className="login-form" onSubmit={handleSubmit} noValidate>
-            <label htmlFor="login-identifier">{loginMethod === "email" ? "Email address" : "Email or phone number"}</label>
+            <label htmlFor="login-identifier">{resetMode ? "Email address" : "Email or phone number"}</label>
             <div className="login-input-wrap">
-              {identifier.includes("@") || loginMethod === "email" ? <AtSign size={18} aria-hidden="true" /> : <span className="login-country-code" aria-hidden="true">GH</span>}
+              {resetMode || identifier.includes("@") ? <AtSign size={18} aria-hidden="true" /> : <span className="login-country-code" aria-hidden="true">GH</span>}
               <input
-                autoComplete={loginMethod === "email" ? "email" : "username"}
+                autoComplete={resetMode ? "email" : "username"}
                 id="login-identifier"
-                inputMode="email"
+                inputMode={resetMode ? "email" : "text"}
                 name="identifier"
                 onChange={(event) => {
                   setIdentifier(event.target.value);
-                  setEmailLinkSent(false);
+                  setResetSent(false);
                 }}
-                placeholder={loginMethod === "email" ? "farmer@example.com" : "Email or 024 123 4567"}
-                type={loginMethod === "email" ? "email" : "text"}
+                placeholder={resetMode ? "farmer@example.com" : "Email or 024 123 4567"}
+                type={resetMode ? "email" : "text"}
                 value={identifier}
                 required
               />
             </div>
 
-            {loginMethod === "password" ? (
+            {resetMode ? (
+              <p className="login-config-note">
+                <ShieldCheck size={17} />
+                <span>Enter the email address linked to your account. The reset link expires after a short time.</span>
+              </p>
+            ) : (
               <>
                 <div className="login-password-label">
                   <label htmlFor="login-password">Password</label>
                   <button
                     className="login-forgot"
-                    onClick={() => {
-                      toast.info("Password reset", "Contact your farm administrator. Use email-link sign-in if your account was created by the administrator.");
-                    }}
+                    onClick={startPasswordReset}
                     type="button"
                   >
                     Forgot password?
@@ -145,17 +167,12 @@ export default function LoginPage() {
                   </button>
                 </div>
               </>
-            ) : (
-              <p className="login-config-note">
-                <ShieldCheck size={17} />
-                <span>Only email addresses already set up by the farm administrator can receive a sign-in link.</span>
-              </p>
             )}
 
-            {loginMethod === "email" && emailLinkSent && (
+            {resetMode && resetSent && (
               <p className="login-config-note" role="status">
                 <ShieldCheck size={17} />
-                <span>We sent a sign-in link to {identifier}. Open it in your browser to finish signing in. If the link expires or has been used, request another one.</span>
+                <span>If an account exists for {identifier}, a reset link is on its way. Open it in your browser to choose a new password.</span>
               </p>
             )}
 
@@ -167,12 +184,16 @@ export default function LoginPage() {
             )}
 
             <button className="login-submit" disabled={busy || useMocks} type="submit">
-              {busy ? (loginMethod === "email" ? "Sending link..." : "Signing in...") : loginMethod === "email" ? (emailLinkSent ? "Resend sign-in link" : "Send sign-in link") : "Sign in"}
+              {busy
+                ? resetMode ? "Sending reset link..." : "Signing in..."
+                : resetMode
+                  ? resetSent ? "Resend reset link" : "Send reset link"
+                  : "Sign in"}
               {!busy && <ArrowRight size={17} />}
             </button>
-            {!useMocks && (
-              <button className="login-method-toggle" disabled={busy} onClick={toggleLoginMethod} type="button">
-                {loginMethod === "email" ? "Use password instead" : "Sign in with an email link"}
+            {resetMode && (
+              <button className="login-method-toggle" disabled={busy} onClick={exitPasswordReset} type="button">
+                Back to sign in
               </button>
             )}
           </form>

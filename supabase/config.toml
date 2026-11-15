@@ -13,8 +13,14 @@ major_version = 15
 enabled = true
 sql_paths = ["./seed.sql"]
 
+[functions.complete-initial-password-change]
+verify_jwt = true
+
 [functions.create-farmer]
 verify_jwt = true
 
 [functions.delete-farmer]
+verify_jwt = true
+
+[functions.manage-farmer]
 verify_jwt = true

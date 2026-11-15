@@ -6,7 +6,8 @@ import type { Profile, Role } from "@/types";
 interface AuthState {
   user: Profile | null;
   signIn: (identifier: string, password: string) => Promise<void>;
-  requestEmailSignInLink: (email: string) => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  completePasswordReset: (newPassword: string) => Promise<void>;
   signInAsDemo: (role: Role) => void;
   registerDemoFarmer: (details: Pick<Profile, "full_name" | "phone">) => Profile;
   updateDemoProfile: (details: Pick<Profile, "full_name" | "phone">) => void;
@@ -15,6 +16,7 @@ interface AuthState {
   requestPhoneChange: (phone: string) => Promise<void>;
   verifyPhoneChange: (phone: string, token: string) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  completeInitialPasswordChange: (newPassword: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -32,22 +34,41 @@ function isRole(value: unknown): value is Role {
   return value === "admin" || value === "farmer";
 }
 
-async function fetchProfile(id: string, email: string | null = null): Promise<Profile> {
-  const { data: profile, error } = await supabase
+async function fetchProfile(id: string, email: string | null = null, mustChangePassword = false): Promise<Profile> {
+  let { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, full_name, phone, role, avatar_path")
+    .select("id, full_name, phone, role, avatar_path, is_active")
     .eq("id", id)
     .single();
+
+  if (error?.code === "42703") {
+    const fallback = await supabase
+      .from("profiles")
+      .select("id, full_name, phone, role, avatar_path")
+      .eq("id", id)
+      .single();
+    profile = fallback.data as typeof profile;
+    error = fallback.error;
+  }
 
   if (error) throw error;
   if (!profile || !isRole(profile.role)) {
     throw new Error("Your account profile is missing or has an invalid role. Contact the administrator.");
   }
+  if (profile.is_active === false) {
+    throw new Error("This account has been deactivated. Contact the farm administrator.");
+  }
   const avatarUrl = profile.avatar_path
     ? await supabase.storage.from("profile-avatars").createSignedUrl(profile.avatar_path, 3600)
     : null;
   if (avatarUrl?.error) throw avatarUrl.error;
-  return { ...profile, phone: profile.phone ?? "", email, avatar_url: avatarUrl?.data.signedUrl ?? null };
+  return {
+    ...profile,
+    phone: profile.phone ?? "",
+    email,
+    avatar_url: avatarUrl?.data.signedUrl ?? null,
+    must_change_password: mustChangePassword,
+  };
 }
 
 function validateAvatar(image: File) {
@@ -73,9 +94,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (useMocks) return;
 
     let active = true;
-    const restoreUser = async (id: string, email: string | null) => {
+    const restoreUser = async (id: string, email: string | null, mustChangePassword: boolean) => {
       try {
-        const profile = await fetchProfile(id, email);
+        const profile = await fetchProfile(id, email, mustChangePassword);
         if (active) setUser(profile);
       } catch (error) {
         console.error("Unable to load the signed-in user's profile.", error);
@@ -85,7 +106,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     void supabase.auth.getSession().then(({ data, error }) => {
       if (error) throw error;
-      if (data.session) void restoreUser(data.session.user.id, data.session.user.email ?? null);
+      if (data.session) {
+        void restoreUser(
+          data.session.user.id,
+          data.session.user.email ?? null,
+          data.session.user.app_metadata.must_change_password === true,
+        );
+      }
     }).catch((error: unknown) => {
       console.error("Unable to restore the Supabase session.", error);
     });
@@ -95,7 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         return;
       }
-      queueMicrotask(() => void restoreUser(session.user.id, session.user.email ?? null));
+      queueMicrotask(() => void restoreUser(
+        session.user.id,
+        session.user.email ?? null,
+        session.user.app_metadata.must_change_password === true,
+      ));
     });
 
     return () => {
@@ -118,7 +149,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!authData.user) throw new Error("Supabase did not return a signed-in user.");
 
     try {
-      const profile = await fetchProfile(authData.user.id, authData.user.email ?? null);
+      const profile = await fetchProfile(
+        authData.user.id,
+        authData.user.email ?? null,
+        authData.user.app_metadata.must_change_password === true,
+      );
       setUser(profile);
     } catch (profileError) {
       const { error: signOutError } = await supabase.auth.signOut();
@@ -126,15 +161,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw profileError;
     }
   };
-  const requestEmailSignInLink = async (email: string) => {
-    if (useMocks) throw new Error("Email sign-in requires a configured Supabase project.");
-    const redirect = new URL("/login", window.location.origin);
-    redirect.searchParams.set("returnTo", "/dashboard");
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
-      options: { shouldCreateUser: false, emailRedirectTo: redirect.toString() },
+  const requestPasswordReset = async (email: string) => {
+    if (useMocks) throw new Error("Password reset requires a configured Supabase project.");
+    const redirect = new URL("/reset-password", window.location.origin);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: redirect.toString(),
     });
     if (error) throw error;
+  };
+  const completePasswordReset = async (newPassword: string) => {
+    if (useMocks) throw new Error("Password reset requires a configured Supabase project.");
+    if (newPassword.length < 12) throw new Error("Use a password with at least 12 characters.");
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    if (!data.user) throw new Error("This reset link is invalid or has expired. Request a new one.");
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+    if (updateError) throw updateError;
+  };
+  const completeInitialPasswordChange = async (newPassword: string) => {
+    if (useMocks || !user) throw new Error("Password changes require a signed-in Supabase account.");
+    if (newPassword.length < 12) throw new Error("Use a password with at least 12 characters.");
+    if (!user.must_change_password) throw new Error("A first-login password change is not required for this account.");
+
+    const { data, error } = await supabase.functions.invoke<{ must_change_password: boolean }>(
+      "complete-initial-password-change",
+      { body: { password: newPassword } },
+    );
+    if (error) {
+      const context = "context" in error ? error.context : null;
+      if (context instanceof Response) {
+        const responseBody: unknown = await context.clone().json().catch(() => null);
+        if (responseBody && typeof responseBody === "object" && "error" in responseBody && typeof responseBody.error === "string") {
+          throw new Error(responseBody.error);
+        }
+      }
+      throw error;
+    }
+    if (data?.must_change_password !== false) {
+      throw new Error("The new password was saved, but the account setup could not be completed. Try again.");
+    }
+    const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) throw refreshError;
+    if (!refreshed.session || refreshed.session.user.app_metadata.must_change_password === true) {
+      throw new Error("The new password was saved, but the account setup could not be completed. Try again.");
+    }
+    setUser(await fetchProfile(
+      refreshed.session.user.id,
+      refreshed.session.user.email ?? null,
+      false,
+    ));
   };
   const signInAsDemo = (role: Role) => {
     if (!useDemoAuth) {
@@ -298,7 +373,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={{
     user,
     signIn,
-    requestEmailSignInLink,
+    requestPasswordReset,
+    completePasswordReset,
     signInAsDemo,
     registerDemoFarmer,
     updateDemoProfile,
@@ -307,6 +383,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     requestPhoneChange,
     verifyPhoneChange,
     changePassword,
+    completeInitialPasswordChange,
     signOut,
   }}>{children}</AuthContext.Provider>;
 }

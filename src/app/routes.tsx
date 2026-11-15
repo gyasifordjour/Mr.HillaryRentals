@@ -3,6 +3,8 @@ import ProtectedRoute from "@/features/auth/ProtectedRoute";
 import AppShell from "@/components/layout/AppShell";
 import LandingPage from "@/pages/public/LandingPage";
 import LoginPage from "@/pages/auth/LoginPage";
+import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
+import ChangePasswordPage from "@/pages/auth/ChangePasswordPage";
 import FarmerSignupPage from "@/pages/auth/FarmerSignupPage";
 import FarmerDashboard from "@/pages/farmer/FarmerDashboard";
 import FarmerCameras from "@/pages/farmer/FarmerCameras";
@@ -23,6 +25,10 @@ export default function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/rooms" element={<BrowseRooms />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/change-password" element={<ChangePasswordPage />} />
+      </Route>
       <Route path="/signup" element={<FarmerSignupPage />} />
       <Route path="/rental-request" element={<RentalRequestPage />} />
 

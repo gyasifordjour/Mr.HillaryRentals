@@ -79,24 +79,30 @@ Before using this workflow:
    ```sh
    supabase functions deploy create-farmer --project-ref <project-ref>
    supabase functions deploy delete-farmer --project-ref <project-ref>
+   supabase functions deploy manage-farmer --project-ref <project-ref>
+   supabase functions deploy complete-initial-password-change --project-ref <project-ref>
    ```
 
    The functions use Supabase's server-side `SUPABASE_SERVICE_ROLE_KEY` to
    verify that the caller is an administrator. `create-farmer` creates the Auth
-   user and requests the initial email link. `delete-farmer` permanently removes
-   the farmer's Auth user along with their rentals, payments, and service
-   requests, then releases any rooms that are no longer occupied by an active
-   rental. These are supplied to deployed Edge Functions by Supabase; do not add
-   the service-role key to `.env.local` or any `VITE_` variable.
+   user with an auto-verified email, saves the farmer's name, phone number, and
+   optional profile picture, and returns a one-time temporary password that the
+   administrator shares with the farmer. The farmer is forced to choose a new
+   password at first sign-in; `complete-initial-password-change` saves that new
+   password and clears the requirement. `delete-farmer` permanently removes the
+   farmer's Auth user along with their rentals, payments, and service requests,
+   then releases any rooms that are no longer occupied by an active rental.
+   These are supplied to deployed Edge Functions by Supabase; do not add the
+   service-role key to `.env.local` or any `VITE_` variable.
 6. Ensure the administrator's profile has `role = 'admin'`. Test with an email
    address you control before onboarding a farmer.
 
-An account can be created even if the email provider rejects the initial
-message. The Admin → Farmers page reports this separately; the farmer can then
-request another sign-in link from the email sign-in form after the provider
-issue is resolved. Email addresses must be unique in Supabase Auth. If the
-project is in mock mode or Supabase is not configured, account creation is
-disabled and only temporary local preview accounts are available.
+An account can be created even when the email provider is not configured,
+because the email address is verified at creation. The Admin → Farmers page
+shows the temporary password once; the farmer can then change it after signing
+in. Email addresses must be unique in Supabase Auth. If the project is in mock
+mode or Supabase is not configured, account creation is disabled and only
+temporary local preview accounts are available.
 
 Room requests, rental review, and service requests use database functions that
 validate the signed-in user and apply row-level security. Payment rows are

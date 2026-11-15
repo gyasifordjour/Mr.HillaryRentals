@@ -10,6 +10,8 @@ export interface Profile {
   role: Role;
   avatar_path?: string | null;
   avatar_url?: string | null;
+  is_active?: boolean;
+  must_change_password?: boolean;
 }
 
 export interface Farm {

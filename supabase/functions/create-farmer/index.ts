@@ -13,33 +13,22 @@ function respond(body: Record<string, unknown>, status: number) {
   });
 }
 
-function normalizeEmail(value: unknown) {
+function normalizeEmail(value: FormDataEntryValue | null) {
   if (typeof value !== "string") return null;
   const email = value.trim().toLowerCase();
   if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
   return email;
 }
 
-function getFarmerSignInRedirect(origin: string | null, allowedHttpsOrigins: Set<string>) {
-  if (!origin) return null;
-
-  try {
-    const appUrl = new URL(origin);
-    const isLocalHttp = appUrl.protocol === "http:"
-      && ["localhost", "127.0.0.1", "[::1]"].includes(appUrl.hostname);
-    const isAllowedHttps = appUrl.protocol === "https:" && allowedHttpsOrigins.has(appUrl.origin);
-    if (appUrl.origin !== origin || (!isAllowedHttps && !isLocalHttp)) return null;
-
-    const redirect = new URL("/login", appUrl.origin);
-    redirect.searchParams.set("returnTo", "/dashboard");
-    return redirect.toString();
-  } catch {
-    return null;
-  }
+function temporaryPassword() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  const characters = Array.from(bytes, (byte) => alphabet[byte % alphabet.length]);
+  return `Farm-${characters.slice(0, 4).join("")}-${characters.slice(4, 8).join("")}-${characters.slice(8, 12).join("")}`;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error.";
 }
 
 Deno.serve(async (request) => {
@@ -56,9 +45,8 @@ Deno.serve(async (request) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!supabaseUrl || !serviceRoleKey || !anonKey) {
-    console.error("Missing Supabase URL, service-role key, or anon key for create-farmer.");
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error("Missing Supabase URL or service-role key for create-farmer.");
     return respond({ error: "Farmer account creation is not configured on the server." }, 500);
   }
 
@@ -83,42 +71,40 @@ Deno.serve(async (request) => {
     return respond({ error: "Only administrators can create farmer accounts." }, 403);
   }
 
-  let payload: Record<string, unknown>;
+  let form: FormData;
   try {
-    const body: unknown = await request.json();
-    if (!isRecord(body)) {
-      return respond({ error: "Provide a farmer name and email address." }, 400);
-    }
-    payload = body;
+    form = await request.formData();
   } catch {
-    return respond({ error: "The request body must be valid JSON." }, 400);
+    return respond({ error: "The farmer details could not be read." }, 400);
   }
 
-  const fullName = typeof payload.full_name === "string"
-    ? payload.full_name.replace(/\s+/g, " ").trim()
-    : "";
-  const email = normalizeEmail(payload.email);
+  const fullName = (form.get("full_name") ?? "").toString().replace(/\s+/g, " ").trim();
+  const email = normalizeEmail(form.get("email"));
+  const phone = (form.get("phone") ?? "").toString().trim();
+  const avatarEntry = form.get("avatar");
+  const avatar = avatarEntry instanceof File && avatarEntry.size > 0 ? avatarEntry : null;
+
   if (fullName.length < 2 || fullName.length > 100) {
     return respond({ error: "Enter a name between 2 and 100 characters." }, 400);
   }
-  if (!email) {
-    return respond({ error: "Enter a valid email address." }, 400);
+  if (!email) return respond({ error: "Enter a valid email address." }, 400);
+  if (phone.length > 30) return respond({ error: "Enter a shorter phone number." }, 400);
+  if (avatarEntry && !(avatarEntry instanceof File)) {
+    return respond({ error: "Choose a valid profile picture." }, 400);
+  }
+  if (avatar && !["image/jpeg", "image/png", "image/webp"].includes(avatar.type)) {
+    return respond({ error: "Choose a JPG, PNG, or WebP profile picture." }, 400);
+  }
+  if (avatar && avatar.size > 5 * 1024 * 1024) {
+    return respond({ error: "Profile pictures must be 5 MB or smaller." }, 400);
   }
 
-  const allowedHttpsOrigins = new Set(
-    (Deno.env.get("APP_ORIGINS") ?? "")
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean),
-  );
-  const emailRedirectTo = getFarmerSignInRedirect(request.headers.get("Origin"), allowedHttpsOrigins);
-  if (!emailRedirectTo) {
-    return respond({ error: "This app URL is not allowed for farmer sign-in links. Open the approved app URL and try again." }, 400);
-  }
-
+  const password = temporaryPassword();
   const { data: created, error: createError } = await adminClient.auth.admin.createUser({
     email,
-    email_confirm: false,
+    password,
+    email_confirm: true,
+    app_metadata: { must_change_password: true },
     user_metadata: { full_name: fullName },
   });
   if (createError || !created.user) {
@@ -129,26 +115,44 @@ Deno.serve(async (request) => {
     return respond({ error: "Could not create the farmer account." }, 500);
   }
 
-  const emailClient = createClient(supabaseUrl, anonKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-  const { error: emailError } = await emailClient.auth.signInWithOtp({
-    email,
-    options: { shouldCreateUser: false, emailRedirectTo },
-  });
+  const farmerId = created.user.id;
+  let avatarPath: string | null = null;
+  if (avatar) {
+    const extension = avatar.type === "image/jpeg" ? "jpg" : avatar.type.split("/")[1];
+    avatarPath = `${farmerId}/${crypto.randomUUID()}.${extension}`;
+    const { error: uploadError } = await adminClient.storage.from("profile-avatars").upload(avatarPath, avatar, {
+      contentType: avatar.type,
+      upsert: false,
+    });
+    if (uploadError) {
+      const { error: cleanupError } = await adminClient.auth.admin.deleteUser(farmerId);
+      if (cleanupError) console.error("Could not remove farmer account after profile picture upload failed:", cleanupError.message);
+      console.error("Could not upload farmer profile picture:", uploadError.message);
+      return respond({ error: "The profile picture could not be uploaded, so the farmer account was not created." }, 500);
+    }
+  }
 
-  if (emailError) {
-    console.error(`Farmer ${created.user.id} was created, but the welcome email could not be sent:`, emailError.message);
-    return respond({
-      farmer_id: created.user.id,
-      email_sent: false,
-      message: "The account was created, but the email could not be sent. Ask the farmer to request a new sign-in link from the sign-in page.",
-    }, 201);
+  const { error: updateError } = await adminClient
+    .from("profiles")
+    .update({ full_name: fullName, email, phone: phone || null, avatar_path: avatarPath })
+    .eq("id", farmerId);
+  if (updateError) {
+    if (avatarPath) {
+      const { error: imageCleanupError } = await adminClient.storage.from("profile-avatars").remove([avatarPath]);
+      if (imageCleanupError) console.error("Could not remove uploaded profile picture after profile save failed:", imageCleanupError.message);
+    }
+    const { error: userCleanupError } = await adminClient.auth.admin.deleteUser(farmerId);
+    if (userCleanupError) console.error("Could not remove farmer account after profile save failed:", userCleanupError.message);
+    if (updateError.code === "23505") {
+      return respond({ error: "That phone number belongs to another account." }, 409);
+    }
+    console.error("Could not save farmer profile:", updateError.message);
+    return respond({ error: "The farmer profile could not be saved." }, 500);
   }
 
   return respond({
-    farmer_id: created.user.id,
-    email_sent: true,
-    message: "The farmer account was created and a sign-in link was sent by email.",
+    farmer_id: farmerId,
+    temporary_password: password,
+    message: "The farmer account was created with a verified email. Share the temporary password securely; the farmer will be required to change it at first sign-in.",
   }, 201);
 });

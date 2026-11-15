@@ -291,6 +291,14 @@
 .dash-profile-picture-preview,.dash-profile-picture-fallback { display: grid; width: 76px; height: 76px; flex: none; place-items: center; border-radius: 50%; background: #e5eee0; color: #41603f; object-fit: cover; font-size: 24px; }
 .dash-profile-picture-controls { min-width: 0; }
 .dash-profile-picture-controls .dash-room-photo-actions { margin-top: 3px; }
+.dash-farmer-photo-editor { display: flex; align-items: center; gap: 12px; min-height: 39px; }
+.dash-farmer-photo-preview,.dash-farmer-photo-fallback { display: grid; width: 42px; height: 42px; flex: none; place-items: center; border-radius: 50%; background: #e5eee0; color: #41603f; object-fit: cover; }
+.dash-credentials-panel { margin-bottom: 17px; border-color: #dfeadd; background: #f7fbf4; }
+.dash-credentials-body { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 18px; }
+.dash-credentials-grid { display: flex; flex: 1 1 320px; flex-wrap: wrap; gap: 10px; }
+.dash-credentials-grid > div { display: grid; flex: 1 1 200px; gap: 5px; padding: 10px 12px; border: 1px solid #e2eadf; border-radius: 6px; background: #fff; }
+.dash-credentials-grid span { color: #899387; font-size: 9px; text-transform: uppercase; letter-spacing: .06em; }
+.dash-credentials-grid strong { color: #354638; font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
 
 .dash-room-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
 .dash-room-card { overflow: hidden; border: 1px solid #e8ece6; border-radius: 9px; background: #fff; transition: transform .24s ease, box-shadow .24s ease, border-color .24s ease; }
@@ -445,6 +453,16 @@
 .dash-action-approve:hover { border-color: #c7dcc2; background: #ecf5e7; transform: translateY(-1px); }
 .dash-action-reject { border-color: #eeded8; background: #fff8f5; color: #9a5d50; }
 .dash-action-reject:hover { border-color: #e6ccc3; background: #fff0eb; transform: translateY(-1px); }
+.dash-rental-actions button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.dash-renew-form { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; width: 100%; }
+.dash-renew-form label { display: grid; gap: 5px; color: #7b877a; font-size: 9px; }
+.dash-renew-form input { min-height: 32px; padding: 0 9px; border: 1px solid #dfe6dc; border-radius: 5px; background: #fff; color: #3d4c3f; font: inherit; font-size: 10px; }
+.dash-farmer-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.dash-farmer-actions .dash-secondary-button { min-height: 30px; padding: 0 9px; font-size: 9px; }
+.dash-farmer-edit-row td { background: #f9fbf7; }
+.dash-farmer-edit { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; padding: 4px 2px; }
+.dash-farmer-edit label { display: grid; flex: 1; gap: 4px; min-width: 150px; color: #7b877a; font-size: 9px; }
+.dash-farmer-edit input { min-height: 32px; padding: 0 9px; border: 1px solid #dfe6dc; border-radius: 5px; background: #fff; color: #3d4c3f; font: inherit; font-size: 10px; }
 .dash-payment-list { display: grid; gap: 10px; padding: 14px; }
 .dash-payment-card { display: grid; min-width: 0; grid-template-columns: 38px minmax(0, 1fr) auto auto; align-items: center; gap: 11px; padding: 13px; border: 1px solid #e9ede7; border-radius: 8px; background: #fff; transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
 .dash-payment-card:hover { transform: translateY(-2px); border-color: #dce5d9; box-shadow: 0 10px 24px rgba(39, 54, 37, .07); }

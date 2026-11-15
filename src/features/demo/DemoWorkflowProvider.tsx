@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { mockCameras, mockFarm, mockProfiles, mockRentalRooms, mockRentals, mockRooms } from "@/mock/data";
 import { supabase, useMocks } from "@/lib/supabase";
@@ -41,8 +41,13 @@ interface DemoWorkflowState {
   saveRoom: (roomId: string | null, room: Omit<Room, "id">, image?: File, removeImage?: boolean) => Promise<void>;
   deleteRoom: (roomId: string) => Promise<void>;
   deleteFarmer: (farmerId: string) => Promise<void>;
+  updateFarmer: (farmerId: string, details: { full_name: string; phone: string }) => Promise<void>;
+  setFarmerActive: (farmerId: string, active: boolean) => Promise<void>;
+  resendFarmerLink: (farmerId: string) => Promise<void>;
   requestRental: (input: { farmerId: string; roomId: string; startDate: string; endDate: string; pigCount: number; note: string }) => Promise<Rental>;
   decideRental: (rentalId: string, decision: "active" | "cancelled") => Promise<void>;
+  cancelRental: (rentalId: string) => Promise<void>;
+  renewRental: (rentalId: string, newEndDate: string) => Promise<void>;
   createServiceRequest: (input: Omit<DemoServiceRequest, "id" | "status">) => Promise<void>;
   decideServiceRequest: (requestId: string, decision: "confirmed" | "declined") => Promise<void>;
   markPaymentPaid: (paymentId: string) => Promise<void>;
@@ -80,6 +85,19 @@ function imageExtension(file: File) {
   return extension === "jpeg" ? "jpg" : extension;
 }
 
+async function invokeManageFarmer<T>(body: Record<string, unknown>) {
+  const { data, error } = await supabase.functions.invoke<T>("manage-farmer", { body });
+  if (!error) return data;
+  const context = "context" in error ? error.context : null;
+  if (context instanceof Response) {
+    const responseBody: unknown = await context.clone().json().catch(() => null);
+    if (responseBody && typeof responseBody === "object" && "error" in responseBody && typeof responseBody.error === "string") {
+      throw new Error(responseBody.error);
+    }
+  }
+  throw error;
+}
+
 const initialPayments: DemoPayment[] = [
   { id: "p-1", farmer_id: "u-kofi", rental_id: "r-1", date: "2026-11-01", description: "November room rental", amount: 1500, status: "paid", reference: "DEMO-RENT-001" },
   { id: "p-2", farmer_id: "u-ama", rental_id: "r-2", date: "2026-11-01", description: "November room rental", amount: 1000, status: "paid", reference: "DEMO-RENT-002" },
@@ -98,12 +116,58 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
   const [payments, setPayments] = useState<DemoPayment[]>(() => useMocks ? initialPayments : []);
   const [isLoading, setIsLoading] = useState(!useMocks);
   const [loadError, setLoadError] = useState("");
+  const lifecycleRef = useRef({ rentals, rentalRooms });
+
+  useEffect(() => {
+    lifecycleRef.current = { rentals, rentalRooms };
+  }, [rentals, rentalRooms]);
 
   const reload = useCallback(async () => {
-    if (useMocks) return;
+    if (useMocks) {
+      const today = currentLocalDate();
+      const { rentals: currentRentals, rentalRooms: currentRentalRooms } = lifecycleRef.current;
+      setRentals((current) => {
+        let changed = false;
+        const next = current.map((rental) => {
+          if (rental.status === "active" && rental.end_date <= today) {
+            changed = true;
+            return { ...rental, status: "expired" as const };
+          }
+          return rental;
+        });
+        return changed ? next : current;
+      });
+      setRooms((current) => {
+        const activeRoomIds = new Set(
+          currentRentalRooms
+            .filter((link) => currentRentals.some((rental) => rental.id === link.rental_id && rental.status === "active" && rental.end_date > today))
+            .map((link) => link.room_id)
+        );
+        let changed = false;
+        const next = current.map((room) => {
+          if (room.status === "occupied" && !activeRoomIds.has(room.id)) {
+            changed = true;
+            return { ...room, status: "available" as const };
+          }
+          return room;
+        });
+        return changed ? next : current;
+      });
+      return;
+    }
     setIsLoading(true);
     setLoadError("");
     try {
+      if (user) {
+        const sweep = await supabase.rpc("expire_due_rentals");
+        if (sweep.error) {
+          if (sweep.error.code === "PGRST202") {
+            console.warn("Rental expiry function is missing. Apply the rental lifecycle migration.");
+          } else {
+            console.warn("Rental expiry sweep failed:", sweep.error.message);
+          }
+        }
+      }
       const [farmResult, roomResult, cameraResult, rentalResult, rentalRoomResult, serviceResult, paymentResult, profileResultWithEmail] = await Promise.all([
         supabase.from("farms").select("id, name, location, description"),
         supabase.from("room_availability").select("id, farm_id, room_number, capacity, monthly_price, status, image_path"),
@@ -112,12 +176,16 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
         user ? supabase.from("rental_rooms").select("rental_id, room_id") : Promise.resolve({ data: [], error: null }),
         user ? supabase.from("service_requests").select("id, farmer_id, rental_id, service, preferred_date, note, status") : Promise.resolve({ data: [], error: null }),
         user ? supabase.from("payments").select("id, farmer_id, rental_id, payment_date, description, amount, status, reference") : Promise.resolve({ data: [], error: null }),
-        user ? supabase.from("profiles").select("id, full_name, phone, email, role") : Promise.resolve({ data: [], error: null }),
+        user ? supabase.from("profiles").select("id, full_name, phone, email, role, is_active") : Promise.resolve({ data: [], error: null }),
       ]);
 
       let profileResult = profileResultWithEmail;
       if (profileResult.error?.code === "42703") {
         console.warn("The profiles.email migration is not applied; farmer emails are omitted from admin listings.");
+        profileResult = await supabase.from("profiles").select("id, full_name, phone, email, role");
+      }
+      if (profileResult.error?.code === "42703") {
+        console.warn("The profiles.is_active migration is not applied; account state is assumed active.");
         profileResult = await supabase.from("profiles").select("id, full_name, phone, role");
       }
 
@@ -282,6 +350,38 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
           : room
       )));
     },
+    updateFarmer: async (farmerId, details) => {
+      const profile = profiles.find((item) => item.id === farmerId);
+      if (!profile || profile.role !== "farmer") throw new Error("Choose a valid farmer account.");
+      const fullName = details.full_name.replace(/\s+/g, " ").trim();
+      const phone = details.phone.trim();
+      if (fullName.length < 2 || fullName.length > 100) throw new Error("Enter a name between 2 and 100 characters.");
+      if (phone.length > 30) throw new Error("Enter a shorter phone number.");
+
+      if (!useMocks) {
+        await invokeManageFarmer<{ message: string }>({ action: "update", farmer_id: farmerId, full_name: fullName, phone });
+        await reload();
+        return;
+      }
+
+      setProfiles((current) => current.map((item) => item.id === farmerId ? { ...item, full_name: fullName, phone } : item));
+    },
+    setFarmerActive: async (farmerId, active) => {
+      const profile = profiles.find((item) => item.id === farmerId);
+      if (!profile || profile.role !== "farmer") throw new Error("Choose a valid farmer account.");
+
+      if (!useMocks) {
+        await invokeManageFarmer<{ message: string }>({ action: "set_active", farmer_id: farmerId, active });
+        await reload();
+        return;
+      }
+
+      setProfiles((current) => current.map((item) => item.id === farmerId ? { ...item, is_active: active } : item));
+    },
+    resendFarmerLink: async (farmerId) => {
+      if (useMocks) throw new Error("Sign-in emails require a configured Supabase project.");
+      await invokeManageFarmer<{ message: string }>({ action: "resend_link", farmer_id: farmerId });
+    },
     requestRental: async ({ farmerId, roomId, startDate, endDate, pigCount, note }) => {
       if (!farmerId) throw new Error("Sign in with a farmer account to request a room.");
       const room = rooms.find((item) => item.id === roomId);
@@ -335,6 +435,55 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
       if (decision === "active" && roomLink) {
         setRooms((current) => current.map((room) => room.id === roomLink.room_id ? { ...room, status: "occupied" } : room));
       }
+    },
+    cancelRental: async (rentalId) => {
+      const rental = rentals.find((item) => item.id === rentalId);
+      if (!rental) throw new Error("This rental no longer exists.");
+      if (rental.farmer_id !== user?.id && user?.role !== "admin") throw new Error("You can only cancel your own rentals.");
+      if (rental.status !== "pending" && rental.status !== "active") throw new Error("Only pending or active rentals can be cancelled.");
+
+      if (!useMocks) {
+        const { error } = await supabase.rpc("cancel_rental", { p_rental_id: rentalId });
+        if (error) throw error;
+        await reload();
+        return;
+      }
+
+      const roomIds = new Set(rentalRooms.filter((link) => link.rental_id === rentalId).map((link) => link.room_id));
+      setRentals((current) => current.map((item) => item.id === rentalId ? { ...item, status: "cancelled" as const } : item));
+      setRooms((current) => current.map((room) => {
+        if (!roomIds.has(room.id) || room.status !== "occupied") return room;
+        const occupiedByAnother = rentals.some((item) => item.id !== rentalId
+          && item.status === "active"
+          && item.end_date > currentLocalDate()
+          && rentalRooms.some((link) => link.rental_id === item.id && link.room_id === room.id));
+        return occupiedByAnother ? room : { ...room, status: "available" as const };
+      }));
+    },
+    renewRental: async (rentalId, newEndDate) => {
+      const rental = rentals.find((item) => item.id === rentalId);
+      if (!rental) throw new Error("This rental no longer exists.");
+      if (rental.farmer_id !== user?.id) throw new Error("You can only renew your own rentals.");
+      if (rental.status !== "active") throw new Error("Only active rentals can be renewed.");
+      if (!newEndDate || newEndDate <= rental.end_date) throw new Error("Choose an end date after the current rental end date.");
+
+      const roomId = rentalRooms.find((link) => link.rental_id === rentalId)?.room_id;
+      if (!roomId) throw new Error("This rental has no room assigned.");
+      const conflict = rentals.some((item) => item.id !== rentalId
+        && (item.status === "pending" || item.status === "active")
+        && item.start_date < newEndDate
+        && item.end_date > rental.end_date
+        && rentalRooms.some((link) => link.rental_id === item.id && link.room_id === roomId));
+      if (conflict) throw new Error("That room is already booked for part of the renewal period.");
+
+      if (!useMocks) {
+        const { error } = await supabase.rpc("renew_rental", { p_rental_id: rentalId, p_new_end_date: newEndDate });
+        if (error) throw error;
+        await reload();
+        return;
+      }
+
+      setRentals((current) => current.map((item) => item.id === rentalId ? { ...item, end_date: newEndDate } : item));
     },
     createServiceRequest: async (input) => {
       const rental = rentals.find((item) => item.id === input.rental_id && item.farmer_id === input.farmer_id && item.status === "active");

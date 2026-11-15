@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, CalendarDays, Check, ClipboardList, Clock3, MapPin, PiggyBank, X } from "lucide-react";
+import { ArrowRight, CalendarDays, CalendarPlus, Check, ClipboardList, Clock3, MapPin, PiggyBank, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";
@@ -28,12 +28,22 @@ function statusLabel(status: RentalStatus) {
   return status === "expired" ? "Ended" : status[0].toUpperCase() + status.slice(1);
 }
 
+function addDays(value: string, days: number) {
+  const date = new Date(`${value}T00:00:00`);
+  date.setDate(date.getDate() + days);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 export default function RentalsPage() {
   const { user } = useAuth();
-  const { farms, profiles, rentals, rentalRooms, rooms, serviceRequests, decideRental, decideServiceRequest } = useDemoWorkflows();
+  const { farms, profiles, rentals, rentalRooms, rooms, serviceRequests, decideRental, decideServiceRequest, cancelRental, renewRental } = useDemoWorkflows();
   const isAdmin = user?.role === "admin";
   const [filter, setFilter] = useState<RentalFilter>("all");
   const [actionError, setActionError] = useState("");
+  const [actionNotice, setActionNotice] = useState("");
+  const [rentalBusy, setRentalBusy] = useState<string | null>(null);
+  const [renewingId, setRenewingId] = useState<string | null>(null);
+  const [renewEndDate, setRenewEndDate] = useState("");
   const location = useLocation();
   const farmer = user;
 
@@ -72,6 +82,45 @@ export default function RentalsPage() {
     }
   };
 
+  const handleCancelRental = async (rentalId: string) => {
+    setActionError("");
+    setActionNotice("");
+    const label = rentals.find((rental) => rental.id === rentalId)?.status === "active" ? "Cancel this active rental and release its room?" : "Cancel this rental request?";
+    if (!window.confirm(label)) return;
+    setRentalBusy(rentalId);
+    try {
+      await cancelRental(rentalId);
+      setActionNotice("The rental was cancelled.");
+    } catch (reason) {
+      setActionError(reason instanceof Error ? reason.message : "The rental could not be cancelled.");
+    } finally {
+      setRentalBusy(null);
+    }
+  };
+
+  const startRenewal = (rentalId: string, endDate: string) => {
+    setActionError("");
+    setActionNotice("");
+    setRenewingId(rentalId);
+    setRenewEndDate(addDays(endDate, 30));
+  };
+
+  const submitRenewal = async (rentalId: string) => {
+    setActionError("");
+    setActionNotice("");
+    setRentalBusy(rentalId);
+    try {
+      await renewRental(rentalId, renewEndDate);
+      setRenewingId(null);
+      setRenewEndDate("");
+      setActionNotice("The rental end date was extended.");
+    } catch (reason) {
+      setActionError(reason instanceof Error ? reason.message : "The rental could not be renewed.");
+    } finally {
+      setRentalBusy(null);
+    }
+  };
+
   return (
     <div>
       <header className="dash-page-head">
@@ -93,6 +142,7 @@ export default function RentalsPage() {
       <section className="dash-panel">
         {location.state?.requestSubmitted && <p className="dash-form-success" role="status">{useMocks ? "Your sample request is now listed as pending review." : "Your request is now listed as pending review."}</p>}
         {actionError && <p className="dash-form-error" role="alert">{actionError}</p>}
+        {actionNotice && <p className="dash-form-success" role="status">{actionNotice}</p>}
         <div className="dash-rentals-toolbar">
           <div className="dash-rental-filters" aria-label="Filter rentals">
             {filters.map((item) => (
@@ -146,6 +196,38 @@ export default function RentalsPage() {
                   <div className="dash-rental-actions">
                     <button type="button" className="dash-action-approve" onClick={() => void handleRentalDecision(rental.id, "active")}><Check size={14} /> {useMocks ? "Approve (demo)" : "Approve"}</button>
                     <button type="button" className="dash-action-reject" onClick={() => void handleRentalDecision(rental.id, "cancelled")}><X size={14} /> {useMocks ? "Reject (demo)" : "Reject"}</button>
+                  </div>
+                )}
+                {!isAdmin && (rental.status === "pending" || rental.status === "active") && (
+                  <div className="dash-rental-actions">
+                    {rental.status === "active" && renewingId === rental.id && (
+                      <form className="dash-renew-form" onSubmit={(event) => { event.preventDefault(); void submitRenewal(rental.id); }}>
+                        <label>
+                          New end date
+                          <input
+                            type="date"
+                            min={addDays(rental.end_date, 1)}
+                            value={renewEndDate}
+                            onChange={(event) => setRenewEndDate(event.target.value)}
+                            required
+                          />
+                        </label>
+                        <button type="submit" className="dash-action-approve" disabled={rentalBusy === rental.id}>
+                          <Check size={14} /> {rentalBusy === rental.id ? "Saving..." : "Save renewal"}
+                        </button>
+                        <button type="button" className="dash-action-reject" onClick={() => { setRenewingId(null); setRenewEndDate(""); }}>
+                          <X size={14} /> Close
+                        </button>
+                      </form>
+                    )}
+                    {rental.status === "active" && renewingId !== rental.id && (
+                      <button type="button" className="dash-secondary-button" onClick={() => startRenewal(rental.id, rental.end_date)} disabled={rentalBusy === rental.id}>
+                        <CalendarPlus size={14} /> Extend rental
+                      </button>
+                    )}
+                    <button type="button" className="dash-action-reject" onClick={() => void handleCancelRental(rental.id)} disabled={rentalBusy === rental.id}>
+                      <X size={14} /> {rentalBusy === rental.id ? "Cancelling..." : rental.status === "pending" ? "Cancel request" : "Cancel rental"}
+                    </button>
                   </div>
                 )}
               </article>

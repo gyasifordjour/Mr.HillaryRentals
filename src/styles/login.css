@@ -13,6 +13,9 @@
   font-family: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
 }
 
+.login-page-single { grid-template-columns: minmax(0, 1fr); }
+.login-page-single .login-form-side { width: 100%; max-width: 760px; margin: 0 auto; }
+
 .login-page *,
 .login-page *::before,
 .login-page *::after {
@@ -160,6 +163,8 @@
   font-size: 12px;
   font-weight: 500;
 }
+
+.login-form > label.login-reset-label { display: block; margin-top: clamp(13px, 2.3vh, 21px); }
 
 .signup-phone-label { display: block; margin-top: clamp(13px, 2.2vh, 20px); }
 
