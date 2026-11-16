@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
-import { ArrowDownUp, ArrowLeft, ArrowRight, Camera, Check, MapPin, PiggyBank, Ruler } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useMemo, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { ArrowDownUp, ArrowLeft, ArrowRight, Camera, Check, MapPin, PiggyBank } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";
 import { getRoomPhoto } from "@/lib/farmPhotos";
@@ -13,20 +13,36 @@ type RoomFilter = "all" | "available";
 type SortOrder = "price" | "capacity";
 
 export default function BrowseRooms() {
-  const [filter, setFilter] = useState<RoomFilter>("all");
+  const [searchParams] = useSearchParams();
+  const minimumCapacity = Math.max(0, Number(searchParams.get("minPigs")) || 0);
+  const [filter, setFilter] = useState<RoomFilter>(searchParams.get("status") === "available" ? "available" : "all");
   const [sortOrder, setSortOrder] = useState<SortOrder>("price");
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { farms, rooms: roomRecords } = useDemoWorkflows();
 
   const rooms = useMemo(() => {
-    const filtered = roomRecords.filter((room) => filter === "all" || room.status === "available");
+    const filtered = roomRecords.filter((room) =>
+      room.capacity >= minimumCapacity && (filter === "all" || room.status === "available")
+    );
     return [...filtered].sort((a, b) =>
       sortOrder === "price" ? a.monthly_price - b.monthly_price || a.room_number - b.room_number : a.capacity - b.capacity
     );
-  }, [filter, sortOrder, roomRecords]);
+  }, [filter, minimumCapacity, sortOrder, roomRecords]);
 
   const availableCount = roomRecords.filter((room) => room.status === "available").length;
   const signInHref = user?.role === "admin" ? "/admin" : user ? "/dashboard" : "/login";
+
+  const openRoomDetail = (event: ReactMouseEvent<HTMLAnchorElement>, roomId: string, photoSrc: string) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const image = event.currentTarget.closest(".room-card")?.querySelector<HTMLImageElement>(".room-illustration");
+    if (!image) return;
+    event.preventDefault();
+    const rect = image.getBoundingClientRect();
+    navigate(`/rooms/${roomId}`, {
+      state: { roomPhotoFlight: { photo: photoSrc, rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height } } },
+    });
+  };
 
   return (
     <main className="rooms-page">
@@ -97,47 +113,48 @@ export default function BrowseRooms() {
           </label>
         </div>
 
+        {minimumCapacity > 0 && <p className="rooms-data-note">Showing rooms with capacity for at least {minimumCapacity} {minimumCapacity === 1 ? "pig" : "pigs"}. <Link to="/rooms">Clear search</Link></p>}
+
         {rooms.length > 0 ? (
           <div className="rooms-grid">
             {rooms.map((room) => {
               const isAvailable = room.status === "available";
               const photo = getRoomPhoto(room.room_number, room.image_path);
-              const requestHref = user?.role === "admin" ? "/admin" : `/rental-request?room=${room.id}`;
               return (
                 <article className={`room-card ${isAvailable ? "room-card-available" : ""}`} key={room.id}>
-                  <div className="room-card-image">
+                  <Link
+                    className="room-card-image"
+                    to={`/rooms/${room.id}`}
+                    onClick={(event) => openRoomDetail(event, room.id, photo.src)}
+                    aria-label={`View details for room ${room.room_number}`}
+                  >
                     <img className="room-illustration" src={photo.src} alt={photo.alt} />
-                    {!room.image_path && <span className="room-photo-note" aria-hidden="true">ILLUSTRATIVE PHOTO</span>}
                     <span className={`room-status ${isAvailable ? "status-available" : "status-unavailable"}`}>
                       <span /> {isAvailable ? "Available" : room.status === "reserved" ? "Reserved" : "Occupied"}
                     </span>
                     <span className="room-number">ROOM {String(room.room_number).padStart(2, "0")}</span>
-                  </div>
+                  </Link>
                   <div className="room-card-content">
                     <div className="room-card-title">
                       <div>
                         <span className="room-card-farm">{farms.find((farm) => farm.id === room.farm_id)?.name ?? "Farm"}</span>
                         <h3>Pig room {String(room.room_number).padStart(2, "0")}</h3>
                       </div>
-                      {isAvailable && <span className="room-camera-ready" title="Camera available"><Camera size={17} /></span>}
                     </div>
                     <div className="room-facts">
                       <span><PiggyBank size={17} /> Up to {room.capacity} pigs</span>
-                      <span><Ruler size={16} /> Individual room</span>
                     </div>
                     <div className="room-card-footer">
                       <div className="room-price">{formatGHS(room.monthly_price)}<span>/ month</span></div>
-                      {isAvailable ? (
-                        <Link
-                          className="room-request-button"
-                          to={requestHref}
-                          aria-label={`${user?.role === "admin" ? "Open dashboard" : user?.role === "farmer" ? "Request" : "Start a request for"} room ${room.room_number}`}
-                        >
-                          {user?.role === "admin" ? "Dashboard" : "Request"} <ArrowRight size={16} />
-                        </Link>
-                      ) : (
-                        <span className="room-unavailable-button">Not available</span>
-                      )}
+                      <Link
+                        className="room-request-button"
+                        to={`/rooms/${room.id}`}
+                        onClick={(event) => openRoomDetail(event, room.id, photo.src)}
+                        aria-label={`View details for room ${room.room_number}`}
+                        title="View room details"
+                      >
+                        <ArrowRight size={16} />
+                      </Link>
                     </div>
                   </div>
                 </article>

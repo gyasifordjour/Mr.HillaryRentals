@@ -142,6 +142,11 @@
   }
 }
 
+@keyframes dash-modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes dash-spin {
   to { transform: rotate(360deg); }
 }
@@ -293,6 +298,44 @@
 .dash-profile-picture-controls .dash-room-photo-actions { margin-top: 3px; }
 .dash-farmer-photo-editor { display: flex; align-items: center; gap: 12px; min-height: 39px; }
 .dash-farmer-photo-preview,.dash-farmer-photo-fallback { display: grid; width: 42px; height: 42px; flex: none; place-items: center; border-radius: 50%; background: #e5eee0; color: #41603f; object-fit: cover; }
+.dash-modal-backdrop { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(15, 25, 18, .58); backdrop-filter: blur(4px); animation: dash-modal-fade-in .18s ease both; }
+.dash-farmer-modal { display: flex; width: min(100%, 560px); max-height: min(760px, calc(100dvh - 48px)); flex-direction: column; overflow: auto; border: 1px solid #e3e9e1; border-radius: 14px; background: #fff; box-shadow: 0 28px 80px rgba(10, 22, 13, .24); color: #203326; }
+.dash-farmer-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 24px 26px 19px; border-bottom: 1px solid #edf0eb; }
+.dash-farmer-modal-head h2 { margin: 8px 0 5px; color: #26382a; font-size: 22px; font-weight: 500; letter-spacing: -.035em; }
+.dash-farmer-modal-head p { margin: 0; color: #7b8679; font-size: 11px; line-height: 1.5; }
+.dash-farmer-modal-close { display: grid; width: 34px; height: 34px; flex: none; place-items: center; border: 1px solid #e6ebe4; border-radius: 8px; background: #fff; color: #758273; cursor: pointer; }
+.dash-farmer-modal-close:hover:not(:disabled) { border-color: #d3ded0; background: #f7f9f5; color: #36583a; }
+.dash-farmer-modal-close:disabled { opacity: .5; cursor: not-allowed; }
+.dash-farmer-steps { display: flex; gap: 12px; margin: 0; padding: 18px 26px; border-bottom: 1px solid #edf0eb; list-style: none; }
+.dash-farmer-steps li { display: flex; min-width: 0; flex: 1; align-items: center; gap: 9px; color: #9aa396; }
+.dash-farmer-steps li > span { display: grid; width: 28px; height: 28px; flex: none; place-items: center; border: 1px solid #dfe5dc; border-radius: 50%; background: #fff; color: #8d988b; font-size: 10px; font-weight: 600; }
+.dash-farmer-steps li.current > span,.dash-farmer-steps li.complete > span { border-color: #315b3b; background: #315b3b; color: #fff; }
+.dash-farmer-steps li > div { display: grid; min-width: 0; gap: 3px; }
+.dash-farmer-steps strong { overflow: hidden; color: #536151; font-size: 10px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.dash-farmer-steps small { overflow: hidden; color: #949d91; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.dash-farmer-steps li.current strong,.dash-farmer-steps li.complete strong { color: #36583a; }
+.dash-farmer-modal-form { display: flex; min-height: 0; flex: 1; flex-direction: column; }
+.dash-farmer-modal-form > .dash-notice { margin: 18px 24px 0; }
+.dash-farmer-modal-fields { display: grid; gap: 17px; padding: 22px 26px 24px; }
+.dash-required-mark { color: #909b8e; font-size: 9px; font-weight: 400; }
+.dash-farmer-modal-fields .dash-form-disclaimer { padding-top: 2px; }
+.dash-farmer-review { display: grid; gap: 18px; padding: 22px 26px 24px; }
+.dash-farmer-modal-photo { display: flex; align-items: center; gap: 15px; }
+.dash-farmer-modal-avatar { display: grid; width: 68px; height: 68px; flex: none; place-items: center; border: 1px solid #e4eae1; border-radius: 50%; background: #edf3e9; color: #587650; object-fit: cover; }
+.dash-farmer-modal-photo-copy { display: grid; min-width: 0; gap: 5px; }
+.dash-farmer-modal-photo-copy > strong { overflow: hidden; color: #405041; font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.dash-farmer-modal-photo-copy > small { color: #899387; font-size: 9px; }
+.dash-farmer-review-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 14px; border: 1px solid #e8ece6; border-radius: 9px; background: #fafbf9; }
+.dash-farmer-review-details > div { display: grid; min-width: 0; gap: 5px; }
+.dash-farmer-review-details > div:last-child { grid-column: 1 / -1; }
+.dash-farmer-review-details dt { color: #899387; font-size: 9px; }
+.dash-farmer-review-details dd { overflow-wrap: anywhere; margin: 0; color: #354638; font-size: 11px; font-weight: 500; }
+.dash-farmer-verified-note { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 12px 13px; border: 1px solid #dfeadd; border-radius: 8px; background: #f5f9f2; color: #688064; }
+.dash-farmer-verified-note > svg { flex: none; margin-top: 1px; color: #5d8155; }
+.dash-farmer-verified-note span { display: grid; gap: 3px; font-size: 9px; line-height: 1.45; }
+.dash-farmer-verified-note strong { color: #456343; font-size: 10px; font-weight: 600; }
+.dash-farmer-modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding: 16px 26px 20px; border-top: 1px solid #edf0eb; }
+.dash-farmer-modal-footer .dash-primary-button { min-width: 138px; }
 .dash-credentials-panel { margin-bottom: 17px; border-color: #dfeadd; background: #f7fbf4; }
 .dash-credentials-body { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 18px; }
 .dash-credentials-grid { display: flex; flex: 1 1 320px; flex-wrap: wrap; gap: 10px; }
@@ -428,6 +471,9 @@
 .dash-primary-button:disabled { opacity: .48; cursor: not-allowed; }
 .dash-secondary-button { border-color: #e0e7de; background: #fff; color: #4b6a4c; }
 .dash-secondary-button:hover:not(:disabled) { border-color: #cbdac7; background: #f5f8f2; transform: translateY(-1px); }
+.dash-whatsapp-button { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; gap: 7px; padding: 0 13px; border: 1px solid #cfe1d0; border-radius: 6px; background: #f2f8f0; color: #315b3b; font: inherit; font-size: 10px; font-weight: 600; cursor: pointer; transition: background .2s, border-color .2s, transform .2s; }
+.dash-whatsapp-button:hover:not(:disabled) { border-color: #b7d1b6; background: #e8f4e5; transform: translateY(-1px); }
+.dash-whatsapp-button:disabled { opacity: .5; cursor: not-allowed; }
 .dash-form-disclaimer,.dash-form-summary-note { margin: 0; color: #899387; font-size: 9px; line-height: 1.55; }
 .dash-form-summary { display: grid; justify-items: start; gap: 12px; padding: 19px; border: 1px solid #e8ece6; border-radius: 9px; background: #fff; }
 .dash-form-summary h2 { margin: 0; color: #354638; font-size: 17px; font-weight: 500; }
@@ -459,6 +505,8 @@
 .dash-renew-form input { min-height: 32px; padding: 0 9px; border: 1px solid #dfe6dc; border-radius: 5px; background: #fff; color: #3d4c3f; font: inherit; font-size: 10px; }
 .dash-farmer-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 .dash-farmer-actions .dash-secondary-button { min-height: 30px; padding: 0 9px; font-size: 9px; }
+.dash-whatsapp-caption,.dash-rental-share-caption { margin: 0 18px 14px; color: #899387; font-size: 9px; line-height: 1.5; }
+.dash-rental-share-caption { margin: 8px 0 0; }
 .dash-farmer-edit-row td { background: #f9fbf7; }
 .dash-farmer-edit { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; padding: 4px 2px; }
 .dash-farmer-edit label { display: grid; flex: 1; gap: 4px; min-width: 150px; color: #7b877a; font-size: 9px; }
@@ -507,6 +555,12 @@
   .rental-request-content { padding: 28px 16px 42px; }
   .rental-request-nav { min-height: 60px; padding: 0 16px; }
   .dash-page-head { align-items: flex-start; flex-direction: column; }
+  .dash-modal-backdrop { align-items: flex-end; padding: 12px; }
+  .dash-farmer-modal { max-height: calc(100dvh - 24px); border-radius: 14px; }
+  .dash-farmer-modal-head { padding: 20px 20px 16px; }
+  .dash-farmer-steps { padding: 15px 20px; }
+  .dash-farmer-modal-fields,.dash-farmer-review { padding: 20px; }
+  .dash-farmer-modal-footer { padding: 14px 20px 18px; }
   .dash-page-head h1 { font-size: 32px; }
   .dash-two-col { grid-template-columns: 1fr; }
   .dash-camera-access-content { align-items: flex-start; flex-wrap: wrap; }
@@ -534,6 +588,12 @@
   .dash-filter-row { align-items: stretch; flex-direction: column; }
   .dash-rental-reference { display: none; }
   .dash-form-row { grid-template-columns: 1fr; gap: 15px; }
+  .dash-farmer-steps { gap: 8px; }
+  .dash-farmer-steps li { gap: 6px; }
+  .dash-farmer-steps small { display: none; }
+  .dash-farmer-review-details { grid-template-columns: 1fr; }
+  .dash-farmer-review-details > div:last-child { grid-column: auto; }
+  .dash-farmer-modal-footer .dash-primary-button { min-width: 0; }
   .dash-payment-card { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 8px; }
   .dash-payment-card > .dash-badge { grid-column: 2; justify-self: start; }
   .dash-payment-card > .dash-secondary-button { grid-column: 2 / -1; justify-self: start; }
@@ -556,7 +616,8 @@
 @media (prefers-reduced-motion: reduce) {
   .dashboard-content > div > *,
   .rental-request-content > *,
-  .camera-player-expanded {
+  .camera-player-expanded,
+  .dash-modal-backdrop {
     animation: none;
   }
 

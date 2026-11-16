@@ -1,15 +1,14 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, AtSign, Camera, Eye, EyeOff, LockKeyhole, ShieldCheck, Sprout, UserRound, UsersRound } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoAuth, useMocks } from "@/lib/supabase";
-import { FARM_FIELD_PHOTO } from "@/lib/farmPhotos";
-import ThemeToggle from "@/components/ui/ThemeToggle";
 import { useToast } from "@/components/ui/ToastProvider";
 import type { Role } from "@/types";
 import "@/styles/login.css";
 
 export default function LoginPage() {
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [resetMode, setResetMode] = useState(false);
@@ -22,6 +21,27 @@ export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const requestedReturnTo = searchParams.get("returnTo");
   const returnTo = requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//") ? requestedReturnTo : null;
+
+  useEffect(() => {
+    const video = heroVideoRef.current;
+    if (!video) return;
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncPlayback = () => {
+      if (motionPreference.matches || document.visibilityState !== "visible") {
+        video.pause();
+        return;
+      }
+      void video.play().catch(() => undefined);
+    };
+    syncPlayback();
+    document.addEventListener("visibilitychange", syncPlayback);
+    motionPreference.addEventListener("change", syncPlayback);
+    return () => {
+      document.removeEventListener("visibilitychange", syncPlayback);
+      motionPreference.removeEventListener("change", syncPlayback);
+      video.pause();
+    };
+  }, []);
 
   useEffect(() => {
     if (user) navigate(
@@ -88,7 +108,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="login-page">
+    <main className="login-page login-page-main">
       <section className="login-form-side">
         <header className="login-topbar">
           <Link to="/" className="login-brand" aria-label="Trinity Integrated Farms home">
@@ -97,7 +117,6 @@ export default function LoginPage() {
           </Link>
           <div className="login-topbar-actions">
             <Link to="/rooms" className="login-back-link"><ArrowLeft size={15} /> Browse rooms</Link>
-            <ThemeToggle />
           </div>
         </header>
 
@@ -239,7 +258,9 @@ export default function LoginPage() {
         </div>
 
         <div className="login-farm-illustration">
-          <img className="login-farm-photo" src={FARM_FIELD_PHOTO} alt="Illustrative stock photo of a farm field; not a Trinity Integrated Farms site photo" />
+          <video ref={heroVideoRef} className="login-farm-photo" autoPlay muted loop playsInline preload="metadata" poster="/landing/poster.jpg" aria-hidden="true">
+            <source src="/landing/hero.mp4" type="video/mp4" />
+          </video>
         </div>
 
         <div className="login-feature-card">

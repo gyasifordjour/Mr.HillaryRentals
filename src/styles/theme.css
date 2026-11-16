@@ -18,24 +18,16 @@ html.dark body {
   height: 34px;
   flex: none;
   place-items: center;
-  border: 1px solid rgba(38, 58, 43, .14);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, .66);
-  color: #315b3b;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: currentColor;
   cursor: pointer;
-  transition: background .2s, border-color .2s, color .2s, transform .2s;
+  transition: color .2s, transform .2s;
 }
 
-.theme-toggle:hover { background: #fff; transform: translateY(-1px); }
-.theme-toggle:focus-visible { outline: 2px solid #8fd694; outline-offset: 2px; }
-
-html.dark .theme-toggle {
-  border-color: rgba(143, 214, 148, .22);
-  background: rgba(255, 255, 255, .07);
-  color: #a9dd8f;
-}
-
-html.dark .theme-toggle:hover { background: rgba(255, 255, 255, .12); }
+.theme-toggle:hover { transform: scale(1.08); }
+.theme-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 
 .login-topbar-actions,
 .rental-request-nav-actions,
@@ -117,6 +109,11 @@ html.dark .dash-secondary-button {
 html.dark .dash-secondary-link:hover,
 html.dark .dash-secondary-button:hover { background: #1f3327; }
 
+html.dark .dash-whatsapp-button { border-color: #31523a; background: #16261b; color: #a9dd8f; }
+html.dark .dash-whatsapp-button:hover:not(:disabled) { border-color: #47734d; background: #1d3323; }
+html.dark .dash-whatsapp-caption,
+html.dark .dash-rental-share-caption { color: #93a294; }
+
 html.dark .dash-stat-card,
 html.dark .dash-panel,
 html.dark .dash-room-card,
@@ -148,6 +145,32 @@ html.dark .dash-room-art {
 }
 
 html.dark .dash-farmer-name > span { background: #223229; color: #a9dd8f; }
+
+html.dark .dash-farmer-modal { border-color: #263a2e; background: #151f19; color: #e8f0e4; }
+html.dark .dash-farmer-modal-head { border-color: #24352b; }
+html.dark .dash-farmer-modal-head h2 { color: #e8f0e4; }
+html.dark .dash-farmer-modal-head p { color: #a9b9a7; }
+html.dark .dash-farmer-modal-close { border-color: #2a3b30; background: #16221b; color: #b9c7b7; }
+html.dark .dash-farmer-modal-close:hover:not(:disabled) { border-color: #3a5540; background: #223229; color: #a9dd8f; }
+html.dark .dash-farmer-steps { border-color: #24352b; }
+html.dark .dash-farmer-steps li > span { border-color: #2a3b30; background: #101814; color: #93a294; }
+html.dark .dash-farmer-steps li.current > span,
+html.dark .dash-farmer-steps li.complete > span { border-color: #8fd694; background: #8fd694; color: #0d2115; }
+html.dark .dash-farmer-steps strong { color: #93a294; }
+html.dark .dash-farmer-steps li.current strong,
+html.dark .dash-farmer-steps li.complete strong { color: #c3e6ba; }
+html.dark .dash-farmer-steps small,
+html.dark .dash-required-mark { color: #93a294; }
+html.dark .dash-farmer-modal-footer { border-color: #24352b; }
+html.dark .dash-farmer-modal-avatar { border-color: #2a3b30; background: #223229; color: #a9dd8f; }
+html.dark .dash-farmer-modal-photo-copy > strong { color: #dbe7d7; }
+html.dark .dash-farmer-modal-photo-copy > small { color: #93a294; }
+html.dark .dash-farmer-review-details { border-color: #263a2e; background: #101814; }
+html.dark .dash-farmer-review-details dt { color: #93a294; }
+html.dark .dash-farmer-review-details dd { color: #dbe7d7; }
+html.dark .dash-farmer-verified-note { border-color: #2a4030; background: #16261b; color: #b9c7b7; }
+html.dark .dash-farmer-verified-note > svg { color: #9ccf95; }
+html.dark .dash-farmer-verified-note strong { color: #a9dd8f; }
 
 html.dark .dash-panel-head { border-color: #24352b; }
 html.dark .dash-panel-head h2 { color: #e8f0e4; }
@@ -446,10 +469,55 @@ html.dark .room-facts span { color: #b9c7b7; }
 html.dark .room-facts svg { color: #8fa48d; }
 html.dark .room-price { color: #e8f0e4; }
 html.dark .room-price span { color: #93a294; }
+html.dark .room-card-request-link { border-color: #24352b; color: #a9dd8f !important; }
 
 html.dark .room-request-button { background: #8fd694; color: #0d2115 !important; }
 html.dark .room-request-button:hover { background: #a4e3a8; }
 html.dark .room-unavailable-button { background: #223229; color: #93a294; }
+
+html.dark .room-detail-breadcrumb { color: #849486; }
+html.dark .room-detail-breadcrumb a { color: #a9c2a6 !important; }
+html.dark .room-detail-breadcrumb a:hover { color: #a9dd8f !important; }
+html.dark .room-detail-photo { border-color: #2a3b30; background: #223229; }
+html.dark .room-detail-status,
+html.dark .room-detail-photo-note { border-color: rgba(255,255,255,.15); background: rgba(18,28,22,.88); color: #c3d0c0; }
+html.dark .room-detail-status.is-available { color: #a9dd8f; }
+html.dark .room-detail-status.is-available > span { background: #8fd694; }
+html.dark .room-detail-heading h1,
+html.dark .room-detail-section-heading h2,
+html.dark .room-detail-empty h1 { color: #e8f0e4; }
+html.dark .room-detail-heading p,
+html.dark .room-detail-photo-disclaimer,
+html.dark .room-detail-information dt,
+html.dark .room-detail-highlights small { color: #93a294; }
+html.dark .room-detail-capacity,
+html.dark .room-detail-highlights article,
+html.dark .room-detail-information,
+html.dark .room-detail-booking,
+html.dark .room-detail-empty {
+  border-color: #2a3b30;
+  background: #151f19;
+  color: #b9c7b7;
+}
+html.dark .room-detail-highlight-icon { background: #223229; color: #a9dd8f; }
+html.dark .room-detail-highlights strong,
+html.dark .room-detail-information dd { color: #d3dfd0; }
+html.dark .room-detail-section-heading { border-color: #24352b; color: #8fa48d; }
+html.dark .room-detail-information dl > div { border-color: #24352b; }
+html.dark .room-detail-rate { color: #e8f0e4; }
+html.dark .room-detail-rate span,
+html.dark .room-detail-booking > p,
+html.dark .room-detail-booking-note,
+html.dark .room-detail-empty p { color: #93a294; }
+html.dark .room-detail-booking-status { background: #223229; color: #b9c7b7; }
+html.dark .room-detail-booking-status.is-available { background: #1d3323; color: #a9dd8f; }
+html.dark .room-detail-booking-status.is-available > span { background: #8fd694; }
+html.dark .room-detail-request-button { background: #8fd694; color: #0d2115 !important; }
+html.dark .room-detail-request-button:hover { background: #a4e3a8; }
+html.dark .room-detail-unavailable-button { border-color: #2a3b30; background: #223229; color: #93a294 !important; }
+html.dark .room-detail-booking-note svg { color: #a9dd8f; }
+html.dark .room-detail-empty-icon { background: #223229; color: #a9dd8f; }
+html.dark .room-detail-back-button { color: #a9dd8f !important; }
 
 html.dark .rooms-empty {
   border-color: #2a3b30;

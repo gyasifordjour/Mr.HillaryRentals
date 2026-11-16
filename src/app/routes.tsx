@@ -9,6 +9,7 @@ import FarmerSignupPage from "@/pages/auth/FarmerSignupPage";
 import FarmerDashboard from "@/pages/farmer/FarmerDashboard";
 import FarmerCameras from "@/pages/farmer/FarmerCameras";
 import BrowseRooms from "@/pages/farmer/BrowseRooms";
+import RoomDetailPage from "@/pages/farmer/RoomDetailPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminRooms from "@/pages/admin/AdminRooms";
 import AdminCameras from "@/pages/admin/AdminCameras";
@@ -24,6 +25,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/rooms" element={<BrowseRooms />} />
+      <Route path="/rooms/:roomId" element={<RoomDetailPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route element={<ProtectedRoute />}>

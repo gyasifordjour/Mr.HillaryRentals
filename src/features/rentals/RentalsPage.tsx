@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, CalendarDays, CalendarPlus, Check, ClipboardList, Clock3, MapPin, PiggyBank, X } from "lucide-react";
+import { ArrowRight, CalendarDays, CalendarPlus, Check, ClipboardList, Clock3, MapPin, MessageCircle, PiggyBank, Printer, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";
+import { openRentalConfirmation } from "@/lib/rentalConfirmation";
+import { formatGHS } from "@/lib/utils";
+import { buildWhatsAppChatUrl } from "@/lib/whatsapp";
 import { useMocks } from "@/lib/supabase";
 import type { RentalStatus } from "@/types";
 
@@ -121,6 +124,62 @@ export default function RentalsPage() {
     }
   };
 
+  const printRentalConfirmation = (rental: (typeof records)[number]) => {
+    setActionError("");
+    setActionNotice("");
+    try {
+      const opened = openRentalConfirmation({
+        reference: rental.id,
+        farmerName: rental.owner?.full_name ?? "Farmer",
+        farmerEmail: rental.owner?.email ?? null,
+        farmerPhone: rental.owner?.phone ?? null,
+        farmName: rental.farmName,
+        farmLocation: rental.farmLocation,
+        rooms: rental.rooms.map((room) => ({ roomNumber: room.room_number, monthlyPrice: room.monthly_price })),
+        startDate: formatDate(rental.start_date),
+        endDate: formatDate(rental.end_date),
+        pigCount: rental.pig_count,
+      });
+      if (!opened) {
+        setActionError("The confirmation could not open. Allow pop-ups for this site and try again.");
+        return;
+      }
+      setActionNotice("Rental confirmation opened. Use Print or save as PDF, then attach it in WhatsApp if needed.");
+    } catch (reason) {
+      setActionError(reason instanceof Error ? reason.message : "The rental confirmation could not be prepared.");
+    }
+  };
+
+  const shareRentalOnWhatsApp = (rental: (typeof records)[number]) => {
+    setActionError("");
+    setActionNotice("");
+    const phone = rental.owner?.phone ?? "";
+    const rooms = rental.rooms.map((room) => `Room ${String(room.room_number).padStart(2, "0")}`).join(", ") || "To be assigned";
+    const monthlyRate = rental.rooms.reduce((total, room) => total + room.monthly_price, 0);
+    const message = [
+      `Hello ${rental.owner?.full_name ?? "there"},`,
+      "Your rental with Trinity Integrated Farms is confirmed.",
+      `Reference: ${rental.id.toUpperCase()}`,
+      `Farm: ${rental.farmName} (${rental.farmLocation})`,
+      `Room(s): ${rooms}`,
+      `Rental period: ${formatDate(rental.start_date)} – ${formatDate(rental.end_date)}`,
+      `Monthly rate: ${formatGHS(monthlyRate)}`,
+      "This message confirms the rental details; it is not proof of payment.",
+    ].join("\n");
+    const chatUrl = buildWhatsAppChatUrl(phone, message);
+    if (!chatUrl) {
+      setActionError("No valid Ghanaian WhatsApp number is available for this farmer. Add one to their profile before sharing.");
+      return;
+    }
+    const whatsappWindow = window.open(chatUrl, "_blank");
+    if (!whatsappWindow) {
+      setActionError("WhatsApp could not be opened. Allow pop-ups for this site and try again.");
+      return;
+    }
+    whatsappWindow.opener = null;
+    setActionNotice("WhatsApp opened with the rental details. Review the message, attach the saved PDF if needed, and tap Send.");
+  };
+
   return (
     <div>
       <header className="dash-page-head">
@@ -197,6 +256,19 @@ export default function RentalsPage() {
                     <button type="button" className="dash-action-approve" onClick={() => void handleRentalDecision(rental.id, "active")}><Check size={14} /> {useMocks ? "Approve (demo)" : "Approve"}</button>
                     <button type="button" className="dash-action-reject" onClick={() => void handleRentalDecision(rental.id, "cancelled")}><X size={14} /> {useMocks ? "Reject (demo)" : "Reject"}</button>
                   </div>
+                )}
+                {isAdmin && rental.status === "active" && (
+                  <>
+                    <div className="dash-rental-actions">
+                      <button type="button" className="dash-secondary-button" onClick={() => printRentalConfirmation(rental)}>
+                        <Printer size={14} /> Print / save PDF
+                      </button>
+                      <button type="button" className="dash-whatsapp-button" onClick={() => shareRentalOnWhatsApp(rental)}>
+                        <MessageCircle size={14} /> Share on WhatsApp
+                      </button>
+                    </div>
+                    <p className="dash-rental-share-caption">The confirmation is not a payment receipt or a substitute for a signed rental agreement.</p>
+                  </>
                 )}
                 {!isAdmin && (rental.status === "pending" || rental.status === "active") && (
                   <div className="dash-rental-actions">

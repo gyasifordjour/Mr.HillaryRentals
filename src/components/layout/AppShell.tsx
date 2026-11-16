@@ -1,5 +1,5 @@
 import { Activity, Camera, ClipboardList, LayoutDashboard, LogOut, MapPinned, PiggyBank, Settings, Sprout, Users, WalletCards } from "lucide-react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoAuth } from "@/lib/supabase";
 import ThemeToggle from "@/components/ui/ThemeToggle";
@@ -8,9 +8,11 @@ import "@/styles/dashboard.css";
 
 export default function AppShell() {
   const { user, signOut } = useAuth();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const toast = useToast();
   const isAdmin = user?.role === "admin";
+  const isOverview = pathname === "/dashboard" || pathname === "/admin";
   const links = isAdmin
     ? [
         { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
@@ -41,7 +43,7 @@ export default function AppShell() {
   };
 
   return (
-    <div className="dashboard-shell">
+    <div className={`dashboard-shell${isOverview ? "" : " dashboard-shell-page"}`}>
       <aside className="dashboard-sidebar">
         <Link to="/" className="dashboard-brand">
           <span className="dashboard-brand-mark"><PiggyBank size={20} /></span>
