@@ -251,8 +251,8 @@ export default function LoginPage() {
 
       <aside className="login-art-side" aria-label="HC Trinity Intergrated Farms services">
         <div className="login-art-glow" />
+        <span className="login-art-kicker"><span /> MORE THAN A ROOM</span>
         <div className="login-art-copy">
-          <span className="login-art-kicker"><span /> MORE THAN A ROOM</span>
           <h2>Care for your pigs.<br /><em>From wherever you are.</em></h2>
           <p>Rent a well-managed space and stay connected to the animals you’re raising.</p>
         </div>
@@ -271,7 +271,6 @@ export default function LoginPage() {
           </div>
           <span className="login-online"><i /> ONLINE</span>
         </div>
-        <span className="login-art-caption">STOCK PHOTO · ILLUSTRATIVE ONLY</span>
       </aside>
     </main>
   );

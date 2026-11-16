@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { Camera, ClipboardList, LayoutDashboard, Menu, PiggyBank, Sprout, UserRound, Users } from "lucide-react";
+import { ArrowRight, Camera, ClipboardList, LayoutDashboard, PiggyBank, Sprout, UserRound, Users } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import ThemeToggle from "@/components/ui/ThemeToggle";
@@ -18,8 +18,11 @@ export default function SiteChrome({ children }: SiteChromeProps) {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const accountHref = user ? isAdmin ? "/admin" : "/dashboard" : "/login";
+  const isDashboardRoute = pathname === "/dashboard"
+    || pathname.startsWith("/admin")
+    || ["/rentals", "/services", "/payments", "/cameras", "/settings"].includes(pathname);
 
-  if (pathname === "/" || pathname === "/login") return children;
+  if (pathname === "/" || pathname === "/login" || isDashboardRoute) return children;
 
   const desktopItems: NavigationItem[] = isAdmin
     ? [
@@ -73,7 +76,7 @@ export default function SiteChrome({ children }: SiteChromeProps) {
         <div className="site-header-actions">
           <Link className="site-header-action" to={user ? accountHref : "/signup"}>{user ? "My account" : "Partner with us"}</Link>
           <ThemeToggle />
-          <Link className="site-header-account" to={accountHref} aria-label={user ? "Open account" : "Sign in"}><Menu size={17} /><span><UserRound size={17} /></span></Link>
+          <Link className="site-header-account" to={accountHref} aria-label={user ? "Open account" : "Sign in"}><span>{user ? "Account" : "Sign in"}</span><ArrowRight size={17} /></Link>
         </div>
       </header>
 

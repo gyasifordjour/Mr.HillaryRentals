@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState, type FormEvent } from "react";
 import {
   ArrowRight, CalendarDays, Camera, Check, ChevronDown,
-  ChevronLeft, ChevronRight, CircleUserRound, Globe2, Heart, MapPin, Menu, Minus,
+  ChevronLeft, ChevronRight, CircleUserRound, Globe2, Heart, MapPin, Minus,
   Plus, PiggyBank, Search, ShieldCheck, UserRound, Wifi, Wheat, X,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -254,8 +254,8 @@ export default function LandingPage() {
           <Link className="landing-brand" to="/">HC Trinity Intergrated Farms</Link><span className="landing-nav-divider" />
           <span className="landing-nav-farmers">Farmers <ChevronDown size={12} /></span>
         </div>
-        <div className="landing-nav-links"><a href="#rooms">Rooms</a><a href="#services">Farm services</a><a href="#monitoring">Monitoring</a></div>
-        <div className="landing-nav-right"><Link to={user ? accountHref : "/signup"}>{user ? "My account" : "Partner with us"}</Link><Globe2 size={17} strokeWidth={1.4} /><Link className="landing-account" to={accountHref} aria-label={user ? "Open dashboard" : "Sign in"}><Menu size={18} /><span><CircleUserRound size={20} fill="currentColor" /></span></Link></div>
+        <div className="landing-nav-links"><Link to="/rooms">Rooms</Link><a href="#services">Farm services</a><a href="#monitoring">Monitoring</a></div>
+        <div className="landing-nav-right"><Link to={user ? accountHref : "/signup"}>{user ? "My account" : "Partner with us"}</Link><Globe2 size={17} strokeWidth={1.4} /><Link className="landing-account" to={accountHref} aria-label={user ? "Open dashboard" : "Sign in"}><span className="landing-account-label">{user ? "Account" : "Sign in"}</span><ArrowRight size={20} /></Link></div>
       </nav>
       <nav className="landing-mobile-nav" aria-label="Mobile navigation">
         <div className="landing-mobile-nav-group">

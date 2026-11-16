@@ -28,8 +28,7 @@ body { margin: 0; overflow-x: hidden; background: #f7d9c6; }
 .landing-nav-links a:hover::after { transform: scaleX(1); }
 .landing-nav-right { gap: 20px; font-size: 13px; }
 .landing-account { display: flex; height: 44px; align-items: center; gap: 17px; padding: 0 7px 0 14px; border: 1px solid currentColor; border-radius: 9px; }
-.landing-account span { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: currentColor; color: var(--peach); }
-.landing-account span svg { color: #44373b; }
+.landing-account-label { white-space: nowrap; }
 .landing-mobile-nav { display: none; }
 
 .landing-hero { position: relative; height: max(750px,100svh); min-height: 680px; isolation: isolate; overflow: hidden; background: #716266; color: white; }

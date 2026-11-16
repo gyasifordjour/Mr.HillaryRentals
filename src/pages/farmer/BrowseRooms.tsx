@@ -121,19 +121,20 @@ export default function BrowseRooms() {
               const isAvailable = room.status === "available";
               const photo = getRoomPhoto(room.room_number, room.image_path);
               return (
-                <article className={`room-card ${isAvailable ? "room-card-available" : ""}`} key={room.id}>
-                  <Link
-                    className="room-card-image"
-                    to={`/rooms/${room.id}`}
-                    onClick={(event) => openRoomDetail(event, room.id, photo.src)}
-                    aria-label={`View details for room ${room.room_number}`}
-                  >
+                <Link
+                  className={`room-card ${isAvailable ? "room-card-available" : ""}`}
+                  key={room.id}
+                  to={`/rooms/${room.id}`}
+                  onClick={(event) => openRoomDetail(event, room.id, photo.src)}
+                  aria-label={`View details for room ${room.room_number}`}
+                >
+                  <div className="room-card-image">
                     <img className="room-illustration" src={photo.src} alt={photo.alt} />
                     <span className={`room-status ${isAvailable ? "status-available" : "status-unavailable"}`}>
                       <span /> {isAvailable ? "Available" : room.status === "reserved" ? "Reserved" : "Occupied"}
                     </span>
                     <span className="room-number">ROOM {String(room.room_number).padStart(2, "0")}</span>
-                  </Link>
+                  </div>
                   <div className="room-card-content">
                     <div className="room-card-title">
                       <div>
@@ -146,18 +147,9 @@ export default function BrowseRooms() {
                     </div>
                     <div className="room-card-footer">
                       <div className="room-price">{formatGHS(room.monthly_price)}<span>/ month</span></div>
-                      <Link
-                        className="room-request-button"
-                        to={`/rooms/${room.id}`}
-                        onClick={(event) => openRoomDetail(event, room.id, photo.src)}
-                        aria-label={`View details for room ${room.room_number}`}
-                        title="View room details"
-                      >
-                        <ArrowRight size={16} />
-                      </Link>
                     </div>
                   </div>
-                </article>
+                </Link>
               );
             })}
           </div>

@@ -223,7 +223,11 @@ export default function RentalsPage() {
             {records.map((rental) => (
               <article className="dash-rental-card" key={rental.id}>
                 <div className="dash-rental-main">
-                  <div className="dash-rental-icon"><ClipboardList size={18} /></div>
+                  <div className="dash-rental-icon">
+                    {rental.owner?.avatar_url
+                      ? <img src={rental.owner.avatar_url} alt="" />
+                      : <ClipboardList size={18} />}
+                  </div>
                   <div className="dash-rental-title">
                     <div className="dash-rental-title-row">
                       <h2>{isAdmin ? rental.owner?.full_name || "Farmer" : `Rental ${rental.id.toUpperCase()}`}</h2>

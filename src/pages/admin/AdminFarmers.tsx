@@ -274,7 +274,7 @@ export default function AdminFarmers() {
 
       {createOpen && createPortal(
         <div
-          className="dash-modal-backdrop"
+          className="dash-modal-backdrop admin-dashboard-modal"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) closeCreateModal();
           }}
@@ -458,7 +458,17 @@ export default function AdminFarmers() {
               return (
                 <Fragment key={farmer.id}>
                   <tr>
-                    <td><strong className="dash-farmer-name"><span>{farmer.full_name.slice(0, 1)}</span>{farmer.full_name}</strong><small>Farmer account</small></td>
+                    <td>
+                      <strong className="dash-farmer-name">
+                        <span>
+                          {farmer.avatar_url
+                            ? <img src={farmer.avatar_url} alt="" />
+                            : farmer.full_name.slice(0, 1)}
+                        </span>
+                        {farmer.full_name}
+                      </strong>
+                      <small>Farmer account</small>
+                    </td>
                     <td>{farmer.email || farmer.phone || "—"}</td>
                     <td>{activeRentals.length || "—"}</td>
                     <td>{farmerRooms.length ? farmerRooms.map((room) => `Room ${String(room.room_number).padStart(2, "0")}`).join(", ") : "—"}</td>

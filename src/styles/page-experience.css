@@ -251,7 +251,6 @@
 .site-header-actions { display: flex; flex: none; align-items: center; gap: 13px; }
 .site-header-action { color: inherit; font-size: 13px; text-decoration: none; }
 .site-header-account { display: flex; height: 42px; align-items: center; gap: 12px; padding: 0 7px 0 13px; border: 1px solid currentColor; border-radius: 9px; color: inherit; text-decoration: none; }
-.site-header-account > span { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 50%; background: #1d1a1c; color: #f7d9c6; }
 .site-mobile-dock { display: none; }
 .site-page-content { min-height: calc(100vh - 74px); }
 .site-page-content .rooms-nav,.site-page-content .rental-request-nav,.site-page-content .login-topbar,.site-page-content .dashboard-topbar { display: none !important; }
@@ -294,7 +293,6 @@
 
 html.dark .site-page-frame { background: #241e22; color: #f7eee8; }
 html.dark .site-header { border-color: #49363a; background: rgba(39,31,35,.94); color: #f7eee8; }
-html.dark .site-header-account > span { background: #f7eee8; color: #241e22; }
 html.dark .site-header .theme-toggle { border: 0; background: transparent; color: inherit; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -350,6 +348,14 @@ html.dark .room-detail-booking-status.is-available { background: #3d4431; color:
 .login-page-main .login-input-wrap { min-height: 54px; margin-top: 7px; border: 1px solid #acacae; border-radius: 10px; background: #fafafa; color: #686868; }
 .login-page-main .login-input-wrap:focus-within { border-color: #7d858c; box-shadow: 0 0 0 3px rgba(40,49,57,.1); }
 .login-page-main .login-input-wrap input { height: 52px; color: #17191c; }
+.login-page-main .login-input-wrap input#login-password[type="password"] {
+  -webkit-text-security: disc;
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+.login-page-main .login-input-wrap input#login-password::placeholder { font-size: 14px; letter-spacing: normal; }
 .login-page-main .login-password-label { margin-top: 16px; }
 .login-page-main .login-forgot,.login-page-main .login-method-toggle { color: #394b5a; }
 .login-page-main .login-submit { min-height: 59px; margin-top: 25px; border-radius: 999px; background: linear-gradient(180deg,#283139,#293340); box-shadow: 0 8px 20px rgba(18,26,34,.14),0 2px 5px rgba(18,26,34,.08); }
@@ -367,8 +373,9 @@ html.dark .room-detail-booking-status.is-available { background: #3d4431; color:
 .login-page-main .login-account-help a { color: #111 !important; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
 .login-page-main .login-foot,.login-page-main .login-feature-card,.login-page-main .login-art-glow { display: none; }
 .login-page-main .login-art-side::after { position: absolute; z-index: 1; inset: 0; background: linear-gradient(180deg,rgba(8,10,12,.05) 18%,rgba(8,10,12,.12) 48%,rgba(8,10,12,.72) 100%); content: ""; pointer-events: none; }
-.login-page-main .login-art-copy { position: absolute; z-index: 2; right: clamp(32px,5vw,76px); bottom: clamp(64px,9vh,92px); left: clamp(32px,4vw,60px); max-width: 700px; }
+.login-page-main .login-art-copy { position: absolute; z-index: 2; right: clamp(32px,5vw,76px); bottom: clamp(100px,15vh,150px); left: clamp(32px,4vw,60px); max-width: 700px; }
 .login-page-main .login-art-kicker { width: fit-content; min-height: 34px; gap: 9px; padding: 0 14px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; background: rgba(47,42,39,.78); color: #fff; font-family: var(--brand-sans); font-size: 11px; font-weight: 500; letter-spacing: .01em; backdrop-filter: blur(8px); }
+.login-page-main .login-art-side > .login-art-kicker { position: absolute; z-index: 2; top: 20px; right: 20px; }
 .login-page-main .login-art-kicker > span { width: 7px; height: 7px; background: #f39419; box-shadow: 0 0 0 4px rgba(243,148,25,.16); }
 .login-page-main .login-art-copy h2 { margin: 22px 0 12px; color: #fff; font-family: var(--brand-sans); font-size: clamp(46px,5.25vw,76px); font-weight: 700; letter-spacing: 0; line-height: .96; text-shadow: 0 2px 22px rgba(0,0,0,.2); }
 .login-page-main .login-art-copy h2 em { color: rgba(255,255,255,.82); font-style: normal; }
@@ -376,7 +383,7 @@ html.dark .room-detail-booking-status.is-available { background: #3d4431; color:
 .login-page-main .login-farm-illustration { position: absolute; inset: 0; min-height: 0; margin: 0; border-radius: 0; background: #55453f; }
 .login-page-main .login-farm-illustration::after { display: none; }
 .login-page-main .login-farm-photo { object-position: center 48%; }
-.login-page-main .login-art-caption { position: absolute; z-index: 2; right: 20px; bottom: 17px; margin: 0; color: rgba(255,255,255,.72); font-family: var(--brand-sans); font-size: 8px; letter-spacing: .1em; }
+.login-page-main .login-art-caption { position: absolute; z-index: 2; top: 20px; right: 20px; margin: 0; color: rgba(255,255,255,.72); font-family: var(--brand-sans); font-size: 8px; letter-spacing: .1em; }
 
 @media (min-width: 701px) and (max-aspect-ratio: 51/50) {
   .login-page-main { display: flex; height: auto; min-height: 100svh; flex-direction: column; overflow-y: auto; }
@@ -407,7 +414,7 @@ html.dark .room-detail-booking-status.is-available { background: #3d4431; color:
   .login-page-main .login-account-help { margin-top: 20px; padding-top: 0; font-size: 12px; }
   .login-page-main .login-security { margin-top: 14px; }
   .login-page-main .login-foot { display: none; }
-  .login-page-main .login-art-copy { right: 24px; bottom: 42px; left: 24px; }
+  .login-page-main .login-art-copy { right: 24px; bottom: 64px; left: 24px; }
   .login-page-main .login-art-kicker { min-height: 31px; padding: 0 11px; font-size: 9px; }
   .login-page-main .login-art-copy h2 { margin: 14px 0 0; font-size: clamp(30px,8.8vw,38px); line-height: .96; }
   .login-page-main .login-art-copy p,.login-page-main .login-art-caption { display: none; }
@@ -415,7 +422,7 @@ html.dark .room-detail-booking-status.is-available { background: #3d4431; color:
 
 @media (max-width: 370px) {
   .login-page-main .login-art-side { height: 232px; min-height: 232px; }
-  .login-page-main .login-art-copy { bottom: 34px; }
+  .login-page-main .login-art-copy { bottom: 52px; }
   .login-page-main .login-art-copy h2 { font-size: 30px; }
   .login-page-main .login-content { padding-right: 22px; padding-left: 22px; }
 }

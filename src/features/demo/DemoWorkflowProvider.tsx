@@ -176,17 +176,17 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
         user ? supabase.from("rental_rooms").select("rental_id, room_id") : Promise.resolve({ data: [], error: null }),
         user ? supabase.from("service_requests").select("id, farmer_id, rental_id, service, preferred_date, note, status") : Promise.resolve({ data: [], error: null }),
         user ? supabase.from("payments").select("id, farmer_id, rental_id, payment_date, description, amount, status, reference") : Promise.resolve({ data: [], error: null }),
-        user ? supabase.from("profiles").select("id, full_name, phone, email, role, is_active") : Promise.resolve({ data: [], error: null }),
+        user ? supabase.from("profiles").select("id, full_name, phone, email, role, is_active, avatar_path") : Promise.resolve({ data: [], error: null }),
       ]);
 
       let profileResult = profileResultWithEmail;
       if (profileResult.error?.code === "42703") {
         console.warn("The profiles.email migration is not applied; farmer emails are omitted from admin listings.");
-        profileResult = await supabase.from("profiles").select("id, full_name, phone, email, role");
+        profileResult = await supabase.from("profiles").select("id, full_name, phone, email, role, avatar_path");
       }
       if (profileResult.error?.code === "42703") {
         console.warn("The profiles.is_active migration is not applied; account state is assumed active.");
-        profileResult = await supabase.from("profiles").select("id, full_name, phone, role");
+        profileResult = await supabase.from("profiles").select("id, full_name, phone, role, avatar_path");
       }
 
       const results = [farmResult, roomResult, cameraResult, rentalResult, rentalRoomResult, serviceResult, paymentResult, profileResult];
@@ -203,7 +203,13 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
         ...payment,
         date: payment.payment_date,
       })) as DemoPayment[]);
-      setProfiles((profileResult.data ?? []) as Profile[]);
+      const profilesWithAvatars = await Promise.all((profileResult.data ?? []).map(async (profile) => {
+        if (!profile.avatar_path) return profile;
+        const avatar = await supabase.storage.from("profile-avatars").createSignedUrl(profile.avatar_path, 3600);
+        if (avatar.error) throw avatar.error;
+        return { ...profile, avatar_url: avatar.data.signedUrl };
+      }));
+      setProfiles(profilesWithAvatars as Profile[]);
     } catch (error) {
       console.error("Unable to load HC Trinity Intergrated Farms data from Supabase.", error);
       setLoadError(error instanceof Error ? error.message : "The farm data could not be loaded.");
