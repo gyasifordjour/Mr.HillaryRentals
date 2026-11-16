@@ -75,9 +75,9 @@ export default function RoomDetailPage() {
   return (
     <main className="rooms-page room-detail-page">
       <header className="rooms-nav">
-        <Link className="rooms-brand" to="/" aria-label="Trinity Integrated Farms home">
+        <Link className="rooms-brand" to="/" aria-label="HC Trinity Intergrated Farms home">
           <span className="rooms-brand-mark"><PiggyBank size={20} strokeWidth={1.8} /></span>
-          Trinity Integrated Farms
+          HC Trinity Intergrated Farms
         </Link>
         <div className="rooms-nav-actions">
           <Link className="rooms-back-link" to="/rooms"><ArrowLeft size={15} /> Browse rooms</Link>
@@ -123,14 +123,14 @@ export default function RoomDetailPage() {
             <div className="room-detail-side">
               <header className="room-detail-heading">
                 <div>
-                  <span className="rooms-eyebrow rooms-eyebrow-dark">{farm?.name ?? "Trinity Integrated Farms"}</span>
+                  <span className="rooms-eyebrow rooms-eyebrow-dark">{farm?.name ?? "HC Trinity Intergrated Farms"}</span>
                   <h1>Room {String(room.room_number).padStart(2, "0")}</h1>
                   <p><MapPin size={16} /> {farm?.location ?? "Location available on request"}</p>
                 </div>
                 <span className="room-detail-capacity"><PiggyBank size={17} /> Up to {room.capacity} pigs</span>
               </header>
 
-              <div className="room-detail-host"><CircleUserRound size={22} /><span>Managed by <strong>{farm?.name ?? "Trinity Integrated Farms"}</strong></span></div>
+              <div className="room-detail-host"><CircleUserRound size={22} /><span>Managed by <strong>{farm?.name ?? "HC Trinity Intergrated Farms"}</strong></span></div>
 
               <section className="room-detail-information">
                 <div className="room-detail-section-heading">
@@ -174,7 +174,7 @@ export default function RoomDetailPage() {
       <footer className="rooms-footer">
         <Link className="rooms-brand" to="/">
           <span className="rooms-brand-mark"><PiggyBank size={19} strokeWidth={1.8} /></span>
-          Trinity Integrated Farms
+          HC Trinity Intergrated Farms
         </Link>
         <span>Space to farm. Confidence to grow.</span>
         <Link to="/rooms">Browse all rooms <ArrowRight size={15} /></Link>

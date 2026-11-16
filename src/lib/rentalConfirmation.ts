@@ -80,11 +80,11 @@ export function openRentalConfirmation(details: RentalConfirmationDetails) {
       <main class="sheet">
         <div class="toolbar"><button onclick="window.print()" type="button">Print or save as PDF</button></div>
         <header class="brand">
-          <div class="brand-name">Trinity Integrated Farms</div>
+          <div class="brand-name">HC Trinity Intergrated Farms</div>
           <div class="issued">Issued ${escapeHtml(issuedOn)}<br>Rental status: Confirmed</div>
         </header>
         <h1>Rental confirmation</h1>
-        <p class="intro">This document confirms the active rental details recorded by Trinity Integrated Farms.</p>
+        <p class="intro">This document confirms the active rental details recorded by HC Trinity Intergrated Farms.</p>
         <div class="reference">REFERENCE ${escapeHtml(details.reference.toUpperCase())}</div>
         <h2 class="section-title">Farmer &amp; farm</h2>
         <section class="details">

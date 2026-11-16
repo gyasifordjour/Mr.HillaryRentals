@@ -40,9 +40,9 @@ export default function FarmerSignupPage() {
     <main className="login-page">
       <section className="login-form-side">
         <header className="login-topbar">
-          <Link to="/" className="login-brand" aria-label="Trinity Integrated Farms home">
+          <Link to="/" className="login-brand" aria-label="HC Trinity Intergrated Farms home">
             <span className="login-brand-mark"><Sprout size={19} strokeWidth={2} /></span>
-            <span>Trinity Integrated Farms</span>
+            <span>HC Trinity Intergrated Farms</span>
           </Link>
           <div className="login-topbar-actions">
             <Link to="/rooms" className="login-back-link"><ArrowLeft size={15} /> Browse rooms</Link>
@@ -89,12 +89,12 @@ export default function FarmerSignupPage() {
         </div>
 
         <footer className="login-foot">
-          <span>© {new Date().getFullYear()} Trinity Integrated Farms</span>
+          <span>© {new Date().getFullYear()} HC Trinity Intergrated Farms</span>
           <span>Space to farm. Confidence to grow.</span>
         </footer>
       </section>
 
-      <aside className="login-art-side" aria-label="Trinity Integrated Farms farm">
+      <aside className="login-art-side" aria-label="HC Trinity Intergrated Farms farm">
         <div className="login-art-glow" />
         <div className="login-art-copy">
           <span className="login-art-kicker"><span /> YOUR FARM, CLOSE AT HAND</span>
@@ -102,7 +102,7 @@ export default function FarmerSignupPage() {
           <p>Start with a room request. The farm team can confirm availability and rental details.</p>
         </div>
         <div className="login-farm-illustration">
-          <img className="login-farm-photo" src={FARM_FIELD_PHOTO} alt="Illustrative stock photo of a farm field; not a Trinity Integrated Farms site photo" />
+          <img className="login-farm-photo" src={FARM_FIELD_PHOTO} alt="Illustrative stock photo of a farm field; not a HC Trinity Intergrated Farms site photo" />
         </div>
         <span className="login-art-caption">STOCK PHOTO · ILLUSTRATIVE ONLY</span>
       </aside>

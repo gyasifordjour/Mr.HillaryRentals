@@ -66,7 +66,7 @@ export default function SiteChrome({ children }: SiteChromeProps) {
   return (
     <div className="site-page-frame">
       <header className="site-header">
-        <Link className="site-brand" to="/">Trinity Integrated Farms</Link>
+        <Link className="site-brand" to="/">HC Trinity Intergrated Farms</Link>
         <nav className="site-header-links" aria-label="Site navigation">
           {desktopItems.map(({ to, label }) => <Link key={to} to={to}>{label}</Link>)}
         </nav>

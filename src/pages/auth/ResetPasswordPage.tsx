@@ -75,9 +75,9 @@ export default function ResetPasswordPage() {
     <main className="login-page login-page-single">
       <section className="login-form-side">
         <header className="login-topbar">
-          <Link to="/" className="login-brand" aria-label="Trinity Integrated Farms home">
+          <Link to="/" className="login-brand" aria-label="HC Trinity Intergrated Farms home">
             <span className="login-brand-mark"><Sprout size={19} strokeWidth={2} /></span>
-            <span>Trinity Integrated Farms</span>
+            <span>HC Trinity Intergrated Farms</span>
           </Link>
           <div className="login-topbar-actions">
             <Link to="/login" className="login-back-link"><ArrowLeft size={15} /> Back to sign in</Link>
@@ -89,7 +89,7 @@ export default function ResetPasswordPage() {
           <div className="login-heading">
             <span className="login-eyebrow"><span /> ACCOUNT RECOVERY</span>
             <h1>Set a new password.</h1>
-            <p>Choose a strong password for your Trinity Integrated Farms account.</p>
+            <p>Choose a strong password for your HC Trinity Intergrated Farms account.</p>
           </div>
 
           {linkState === "checking" && (

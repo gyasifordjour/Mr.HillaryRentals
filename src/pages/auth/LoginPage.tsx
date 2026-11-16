@@ -79,7 +79,7 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await signIn(identifier, password);
-      toast.success("Signed in", "Welcome back to Trinity Integrated Farms.");
+      toast.success("Signed in", "Welcome back to HC Trinity Intergrated Farms.");
     } catch (reason) {
       toast.error("Sign-in failed", reason instanceof Error ? reason.message : "We couldn't sign you in. Please try again.");
     } finally {
@@ -111,9 +111,9 @@ export default function LoginPage() {
     <main className="login-page login-page-main">
       <section className="login-form-side">
         <header className="login-topbar">
-          <Link to="/" className="login-brand" aria-label="Trinity Integrated Farms home">
+          <Link to="/" className="login-brand" aria-label="HC Trinity Intergrated Farms home">
             <span className="login-brand-mark"><Sprout size={19} strokeWidth={2} /></span>
-            <span>Trinity Integrated Farms</span>
+            <span>HC Trinity Intergrated Farms</span>
           </Link>
           <div className="login-topbar-actions">
             <Link to="/rooms" className="login-back-link"><ArrowLeft size={15} /> Browse rooms</Link>
@@ -244,12 +244,12 @@ export default function LoginPage() {
         </div>
 
         <footer className="login-foot">
-          <span>© {new Date().getFullYear()} Trinity Integrated Farms</span>
+          <span>© {new Date().getFullYear()} HC Trinity Intergrated Farms</span>
           <span>Space to farm. Confidence to grow.</span>
         </footer>
       </section>
 
-      <aside className="login-art-side" aria-label="Trinity Integrated Farms services">
+      <aside className="login-art-side" aria-label="HC Trinity Intergrated Farms services">
         <div className="login-art-glow" />
         <div className="login-art-copy">
           <span className="login-art-kicker"><span /> MORE THAN A ROOM</span>

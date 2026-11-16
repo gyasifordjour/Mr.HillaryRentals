@@ -158,7 +158,7 @@ export default function RentalsPage() {
     const monthlyRate = rental.rooms.reduce((total, room) => total + room.monthly_price, 0);
     const message = [
       `Hello ${rental.owner?.full_name ?? "there"},`,
-      "Your rental with Trinity Integrated Farms is confirmed.",
+      "Your rental with HC Trinity Intergrated Farms is confirmed.",
       `Reference: ${rental.id.toUpperCase()}`,
       `Farm: ${rental.farmName} (${rental.farmLocation})`,
       `Room(s): ${rooms}`,

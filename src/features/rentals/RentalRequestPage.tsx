@@ -84,9 +84,9 @@ export default function RentalRequestPage() {
   return (
     <main className="rental-request-page">
       <header className="rental-request-nav">
-        <Link className="rooms-brand" to="/" aria-label="Trinity Integrated Farms home">
+        <Link className="rooms-brand" to="/" aria-label="HC Trinity Intergrated Farms home">
           <span className="rooms-brand-mark"><PiggyBank size={20} strokeWidth={1.8} /></span>
-          Trinity Integrated Farms
+          HC Trinity Intergrated Farms
         </Link>
         <div className="rental-request-nav-actions">
           <Link className="rooms-back-link" to="/rooms"><ArrowLeft size={15} /> Browse rooms</Link>

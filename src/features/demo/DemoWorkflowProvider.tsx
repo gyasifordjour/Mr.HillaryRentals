@@ -205,7 +205,7 @@ export function DemoWorkflowProvider({ children }: { children: ReactNode }) {
       })) as DemoPayment[]);
       setProfiles((profileResult.data ?? []) as Profile[]);
     } catch (error) {
-      console.error("Unable to load Trinity Integrated Farms data from Supabase.", error);
+      console.error("Unable to load HC Trinity Intergrated Farms data from Supabase.", error);
       setLoadError(error instanceof Error ? error.message : "The farm data could not be loaded.");
     } finally {
       setIsLoading(false);

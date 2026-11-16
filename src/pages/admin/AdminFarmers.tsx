@@ -173,7 +173,7 @@ export default function AdminFarmers() {
     if (!createdCredentials) return;
     const message = [
       `Hello ${createdCredentials.fullName},`,
-      "Your Trinity Integrated Farms account is ready.",
+      "Your HC Trinity Intergrated Farms account is ready.",
       `Sign-in email: ${createdCredentials.email}`,
       `Temporary password: ${createdCredentials.password}`,
       "Your email is verified. For your security, choose a new password when you first sign in.",

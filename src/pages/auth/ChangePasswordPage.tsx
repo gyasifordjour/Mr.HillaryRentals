@@ -45,9 +45,9 @@ export default function ChangePasswordPage() {
     <main className="login-page">
       <section className="login-form-side">
         <header className="login-topbar">
-          <Link to="/" className="login-brand" aria-label="Trinity Integrated Farms home">
+          <Link to="/" className="login-brand" aria-label="HC Trinity Intergrated Farms home">
             <span className="login-brand-mark"><Sprout size={19} strokeWidth={2} /></span>
-            <span>Trinity Integrated Farms</span>
+            <span>HC Trinity Intergrated Farms</span>
           </Link>
         </header>
         <div className="login-content">

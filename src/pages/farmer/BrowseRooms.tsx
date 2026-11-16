@@ -47,9 +47,9 @@ export default function BrowseRooms() {
   return (
     <main className="rooms-page">
       <header className="rooms-nav">
-        <Link className="rooms-brand" to="/" aria-label="Trinity Integrated Farms home">
+        <Link className="rooms-brand" to="/" aria-label="HC Trinity Intergrated Farms home">
           <span className="rooms-brand-mark"><PiggyBank size={20} strokeWidth={1.8} /></span>
-          Trinity Integrated Farms
+          HC Trinity Intergrated Farms
         </Link>
         <div className="rooms-nav-actions">
           <Link className="rooms-back-link" to="/">Back to home</Link>
@@ -75,7 +75,7 @@ export default function BrowseRooms() {
           </div>
         </div>
         <div className="rooms-hero-art">
-          <img className="rooms-hero-photo" src="/farm-images/pig-room.jpg" alt="Illustrative stock photo of pigs in a farm room, not a Trinity Integrated Farms facility" />
+          <img className="rooms-hero-photo" src="/farm-images/pig-room.jpg" alt="Illustrative stock photo of pigs in a farm room, not a HC Trinity Intergrated Farms facility" />
           <span className="rooms-photo-caption">ILLUSTRATIVE STOCK PHOTO</span>
           <div className="rooms-art-label"><Camera size={14} /> A camera in every room</div>
         </div>
@@ -187,10 +187,10 @@ export default function BrowseRooms() {
       <footer className="rooms-footer">
         <Link className="rooms-brand" to="/">
           <span className="rooms-brand-mark"><PiggyBank size={19} strokeWidth={1.8} /></span>
-          Trinity Integrated Farms
+          HC Trinity Intergrated Farms
         </Link>
         <span>Space to farm. Confidence to grow.</span>
-        <Link to="/">Back to Trinity Integrated Farms <ArrowLeft size={15} /></Link>
+        <Link to="/">Back to HC Trinity Intergrated Farms <ArrowLeft size={15} /></Link>
       </footer>
     </main>
   );
