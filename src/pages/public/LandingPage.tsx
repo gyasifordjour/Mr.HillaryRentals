@@ -3,7 +3,7 @@ import {
   ArrowRight, CalendarDays, Camera, Check, ChevronDown,
   ChevronLeft, ChevronRight, CircleUserRound, Globe2, Heart, MapPin, Minus,
   Plus, PiggyBank, Search, ShieldCheck, UserRound, Wifi, Wheat, X,
-} from "lucide-react";
+} from "@/components/ui/Iconly";
 import { Link, useNavigate } from "react-router-dom";
 import { addMonths, eachDayOfInterval, endOfMonth, format, getDay, isBefore, isSameDay, startOfMonth, subMonths } from "date-fns";
 import { useAuth } from "@/features/auth/AuthProvider";

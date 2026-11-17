@@ -1,4 +1,4 @@
-import { AlertCircle, Camera, CircleHelp, Maximize2, ShieldCheck } from "lucide-react";
+import { AlertCircle, Camera, CircleHelp, Maximize2, ShieldCheck } from "@/components/ui/Iconly";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";
 import VideoPlayer from "@/components/cctv/VideoPlayer";

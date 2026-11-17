@@ -1,10 +1,14 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { BadgeInfo, ImagePlus, KeyRound, Phone, Save, ShieldCheck, Trash2, UserRound } from "lucide-react";
+import { BadgeInfo, ChevronLeft, ChevronRight, CircleHelp, Crown, ImagePlus, KeyRound, LogOut, Pencil, Phone, Save, Scale, ShieldCheck, Smartphone, Trash2, UserRound } from "@/components/ui/Iconly";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoAuth, useMocks } from "@/lib/supabase";
+import { useToast } from "@/components/ui/ToastProvider";
 
 export default function ProfileSettingsPage() {
-  const { user, updateDemoProfile, updateProfile, updateAvatar, requestPhoneChange, verifyPhoneChange, changePassword } = useAuth();
+  const { user, signOut, updateDemoProfile, updateProfile, updateAvatar, requestPhoneChange, verifyPhoneChange, changePassword } = useAuth();
+  const navigate = useNavigate();
+  const toast = useToast();
   const [fullName, setFullName] = useState(user?.full_name ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
   const [verificationCode, setVerificationCode] = useState("");
@@ -16,6 +20,7 @@ export default function ProfileSettingsPage() {
   const [notice, setNotice] = useState("");
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [avatarMessage, setAvatarMessage] = useState("");
+  const [mobileEditOpen, setMobileEditOpen] = useState(false);
 
   useEffect(() => {
     setFullName(user?.full_name ?? "");
@@ -30,9 +35,11 @@ export default function ProfileSettingsPage() {
       if (useDemoAuth) {
         updateDemoProfile({ full_name: fullName, phone });
         setNotice("Profile updated in this demo session only.");
+        setMobileEditOpen(false);
       } else {
         await updateProfile({ full_name: fullName });
         setNotice("Your profile name was updated.");
+        setMobileEditOpen(false);
       }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Profile changes could not be applied.");
@@ -98,8 +105,72 @@ export default function ProfileSettingsPage() {
     }
   };
 
+  const mobileAction = (label: string) => {
+    toast.info(label, `${label} is ready to be configured from this account.`);
+  };
+
+  const handleMobileLogout = async () => {
+    if (!window.confirm("Log out of your account?")) return;
+    try {
+      await signOut();
+      navigate("/", { replace: true });
+    } catch (reason) {
+      toast.error("Logout failed", reason instanceof Error ? reason.message : "Your account could not be logged out.");
+    }
+  };
+
   return (
-    <div>
+    <div className="profile-settings-page">
+      <div className="mobile-settings-screen">
+        <header className="mobile-settings-header">
+          <button type="button" aria-label="Go back" onClick={() => navigate(-1)}><ChevronLeft size={20} /></button>
+          <h1>Settings</h1>
+          <button type="button" aria-label="Edit profile" onClick={() => setMobileEditOpen(true)}><Pencil size={18} /></button>
+        </header>
+
+        <section className="mobile-settings-profile">
+          {user?.avatar_url
+            ? <img src={user.avatar_url} alt={`${user.full_name}'s profile`} />
+            : <span>{user?.full_name?.slice(0, 1).toUpperCase() || "R"}</span>}
+          <h2>{user?.full_name || "Ryan Donald"}</h2>
+          <p>{user?.email || "ryandonald@gmail.com"}</p>
+        </section>
+
+        <button type="button" className="mobile-settings-premium" onClick={() => mobileAction("Premium Account")}>
+          <span className="mobile-settings-premium-icon"><Crown size={22} /></span>
+          <span><strong>Premium Account</strong><small>Enjoy your premium features</small></span>
+        </button>
+
+        <section className="mobile-settings-group">
+          <h2>Account Settings</h2>
+          <div className="mobile-settings-card">
+            <button type="button" onClick={() => setMobileEditOpen(true)}><UserRound size={18} /><span>Account</span><ChevronRight size={18} /></button>
+            <button type="button" onClick={() => mobileAction("FitPulse Devices")}><Smartphone size={18} /><span>FitPulse Devices</span><ChevronRight size={18} /></button>
+            <button type="button" onClick={() => mobileAction("Equipment")}><Scale size={18} /><span>Equipment</span><ChevronRight size={18} /></button>
+          </div>
+        </section>
+
+        <section className="mobile-settings-group">
+          <h2>Settings</h2>
+          <div className="mobile-settings-card">
+            <button type="button" onClick={() => mobileAction("Help & Support")}><CircleHelp size={18} /><span>Help & Support</span><ChevronRight size={18} /></button>
+            <button type="button" onClick={() => void handleMobileLogout()}><LogOut size={18} /><span>Logout</span><ChevronRight size={18} /></button>
+          </div>
+        </section>
+
+        {mobileEditOpen && (
+          <div className="mobile-settings-edit">
+            <div className="mobile-settings-edit-head"><button type="button" onClick={() => setMobileEditOpen(false)}><ChevronLeft size={18} /></button><strong>Edit profile</strong></div>
+            <form onSubmit={saveProfile}>
+              <label>Full name<input value={fullName} onChange={(event) => setFullName(event.target.value)} required /></label>
+              <label>Email<input value={user?.email ?? ""} readOnly /></label>
+              <button type="submit">Save changes</button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      <div className="profile-settings-desktop">
       <header className="dash-page-head">
         <div>
           <span className="dash-page-eyebrow">ACCOUNT</span>
@@ -210,6 +281,7 @@ export default function ProfileSettingsPage() {
           <div className="dash-service-divider" />
           <p className="dash-form-summary-note">{useMocks ? "Password and phone changes are unavailable in local demo mode." : "Phone changes take effect after SMS verification. Password changes require your current password."}</p>
         </aside>
+      </div>
       </div>
     </div>
   );

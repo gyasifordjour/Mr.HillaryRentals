@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, ArrowRight, KeyRound, ShieldCheck, Sprout } from "lucide-react";
+import { ArrowLeft, ArrowRight, KeyRound, ShieldCheck, Sprout } from "@/components/ui/Iconly";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { supabase, useMocks } from "@/lib/supabase";

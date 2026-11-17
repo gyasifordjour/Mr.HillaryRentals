@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { ArrowRight, Camera, ClipboardList, LayoutDashboard, PiggyBank, Sprout, UserRound, Users } from "lucide-react";
+import { ArrowRight, Camera, ClipboardList, LayoutDashboard, PiggyBank, Sprout, UserRound, Users } from "@/components/ui/Iconly";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import ThemeToggle from "@/components/ui/ThemeToggle";

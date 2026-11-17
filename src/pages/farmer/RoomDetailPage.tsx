@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Camera, Check, DoorOpen, MapPin, PiggyBank, ShieldCheck } from "lucide-react";
-import { CircleUserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, Camera, Check, DoorOpen, MapPin, PiggyBank, ShieldCheck } from "@/components/ui/Iconly";
+import { CircleUserRound } from "@/components/ui/Iconly";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { ArrowRight, BadgeInfo, ClipboardList, Leaf, Sparkles } from "lucide-react";
+import { ArrowRight, BadgeInfo, ClipboardList, Leaf, Sparkles } from "@/components/ui/Iconly";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";

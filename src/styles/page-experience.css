@@ -241,6 +241,16 @@
 .dashboard-shell-page .dash-search,.dashboard-shell-page .dash-form-field input,.dashboard-shell-page .dash-form-field select,.dashboard-shell-page .dash-form-field textarea { border-color: #ead8ce; border-radius: 6px; background-color: #fffdfa; }
 .dashboard-shell-page .dash-search input,.dashboard-shell-page .dash-form-field input,.dashboard-shell-page .dash-form-field select,.dashboard-shell-page .dash-form-field textarea { color: #342a28; }
 
+.admin-dashboard-shell.dashboard-shell-page .dashboard-sidebar {
+  border-right-color: #d9dee7;
+  background: linear-gradient(180deg, #dfe3e8 0%, #e8edf5 100%);
+}
+.admin-dashboard-shell.dashboard-shell-page .dashboard-brand-mark { background: #17191d; color: #fff; }
+.admin-dashboard-shell.dashboard-shell-page .dashboard-topbar {
+  border-bottom-color: #17191d;
+  background: rgba(233,237,241,.92);
+}
+
 .site-page-frame { --site-ink: #1d1a1c; position: relative; min-height: 100vh; background: #f7d9c6; color: var(--site-ink); font-family: var(--brand-sans); }
 .site-header { position: sticky; z-index: 45; top: 0; display: flex; height: 74px; flex: none; align-items: center; justify-content: space-between; gap: 24px; padding: 0 clamp(20px,9.5vw,170px); border-bottom: 1px solid rgba(29,26,28,.08); background: rgba(247,217,198,.9); color: var(--site-ink); backdrop-filter: blur(14px); }
 .site-brand { flex: none; color: inherit; font-size: 22px; font-weight: 300; white-space: nowrap; }
@@ -322,6 +332,47 @@ html.dark .room-detail-booking-status.is-available { background: #3d4431; color:
 @media (prefers-reduced-motion: reduce) {
   .login-page,.rooms-page,.rental-request-content,.room-detail-content,.dashboard-shell-page .dashboard-content > div > * { animation-duration: .01ms !important; animation-delay: 0ms !important; }
 }
+
+html.dark .admin-dashboard-shell.dashboard-shell-page {
+  background: #111113;
+  color: #f4f4f5;
+}
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-sidebar {
+  border-color: #303038;
+  background: #1b1b1f;
+}
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-topbar {
+  border-color: #303038;
+  background: rgba(24, 24, 27, .94);
+}
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-nav-link { color: #a1a1aa; }
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-nav-link:hover { background: #2a2a2f; color: #f4f4f5; }
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-nav-link.active { background: #f4f4f5; color: #18181b; }
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-brand,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-breadcrumb strong,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-profile { color: #f4f4f5; }
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-brand small,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-nav-label,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-breadcrumb,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dashboard-profile small { color: #a1a1aa; }
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-stat-card,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-panel,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-room-card,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-camera-card,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-service-card,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-rental-card {
+  border-color: #303038;
+  background: #18181b;
+  color: #f4f4f5;
+  box-shadow: 0 7px 24px rgba(0, 0, 0, .18);
+}
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-stat-card strong,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-panel-head h2,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-section-title { color: #f4f4f5; }
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-stat-top,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-stat-card small,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-subtitle,
+html.dark .admin-dashboard-shell.dashboard-shell-page .dash-empty p { color: #a1a1aa; }
 
 .login-page-main {
   --login-green: #283139;

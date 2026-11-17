@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, Camera, CircleCheck, Clock3, PiggyBank, Plus } from "lucide-react";
+import { ArrowRight, CalendarDays, Camera, CircleCheck, Clock3, PiggyBank, Plus } from "@/components/ui/Iconly";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";

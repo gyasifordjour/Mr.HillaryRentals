@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { AtSign, ArrowLeft, ArrowRight, Check, Copy, ImagePlus, LoaderCircle, Mail, MessageCircle, Pencil, Phone, Save, Search, ShieldCheck, Trash2, UserCheck, UserPlus, UserRound, Users, UserX, X } from "lucide-react";
+import { AtSign, ArrowLeft, ArrowRight, Check, Copy, DoorOpen, ImagePlus, LoaderCircle, Mail, MessageCircle, MoreHorizontal, Pencil, Phone, Save, Search, ShieldCheck, Trash2, UserCheck, UserPlus, UserRound, Users, UserX, X } from "@/components/ui/Iconly";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";
 import { buildWhatsAppChatUrl } from "@/lib/whatsapp";
@@ -10,7 +11,10 @@ const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export default function AdminFarmers() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedFarmer, setSelectedFarmer] = useState<(typeof profiles)[number] | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [createStep, setCreateStep] = useState<1 | 2>(1);
   const [fullName, setFullName] = useState("");
@@ -36,6 +40,17 @@ export default function AdminFarmers() {
   [profiles, query]);
 
   const summary = profiles.filter((profile) => profile.role === "farmer");
+  const selectedFarmerRentals = selectedFarmer
+    ? rentals.filter((rental) => rental.farmer_id === selectedFarmer.id)
+    : [];
+  const selectedActiveRentals = selectedFarmerRentals.filter((rental) => rental.status === "active");
+  const selectedRentalIds = new Set(selectedActiveRentals.map((rental) => rental.id));
+  const selectedFarmerRooms = selectedFarmer
+    ? rentalRooms
+      .filter((item) => selectedRentalIds.has(item.rental_id))
+      .map((item) => rooms.find((room) => room.id === item.room_id))
+      .filter((room) => room !== undefined)
+    : [];
 
   const resetCreateForm = () => {
     setCreateStep(1);
@@ -56,6 +71,10 @@ export default function AdminFarmers() {
     resetCreateForm();
   };
 
+  const closeFarmerProfile = () => {
+    if (!busyId && !deletingId) setSelectedFarmer(null);
+  };
+
   const continueCreate = () => {
     const nameInput = createFormRef.current?.querySelector<HTMLInputElement>("#farmer-full-name");
     const emailInput = createFormRef.current?.querySelector<HTMLInputElement>("#farmer-email");
@@ -69,18 +88,20 @@ export default function AdminFarmers() {
   };
 
   useEffect(() => {
-    if (!createOpen) return;
+    if (!createOpen && !selectedFarmer) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeCreateModal();
+      if (event.key !== "Escape") return;
+      if (createOpen) closeCreateModal();
+      else closeFarmerProfile();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [createOpen, creating]);
+  }, [createOpen, creating, selectedFarmer, busyId, deletingId]);
 
   useEffect(() => {
     if (!avatar) {
@@ -260,7 +281,20 @@ export default function AdminFarmers() {
   };
 
   return (
-    <div>
+    <div className="admin-farmers-page">
+      <header className="admin-mobile-page-header">
+        <button type="button" aria-label="Go back" onClick={() => navigate(-1)}><ArrowLeft size={19} /></button>
+        <h1>Farmers</h1>
+        <div className="admin-mobile-page-actions">
+          <button type="button" aria-label="Open farmer actions" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen((open) => !open)}><MoreHorizontal size={20} /></button>
+          {mobileMenuOpen && (
+            <div className="admin-mobile-page-menu">
+              <button type="button" onClick={() => { setMobileMenuOpen(false); openCreateModal(); }}><UserPlus size={14} /> Add farmer</button>
+              <button type="button" onClick={() => { setMobileMenuOpen(false); navigate("/admin"); }}><ArrowLeft size={14} /> Home</button>
+            </div>
+          )}
+        </div>
+      </header>
       <header className="dash-page-head">
         <div>
           <span className="dash-page-eyebrow">PEOPLE &amp; ACCOUNTS</span>
@@ -434,10 +468,65 @@ export default function AdminFarmers() {
         </section>
       )}
 
+      {selectedFarmer && createPortal(
+        <div
+          className="dash-modal-backdrop admin-dashboard-modal"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeFarmerProfile();
+          }}
+          role="presentation"
+        >
+          <section className="dash-farmer-profile-modal" aria-labelledby="farmer-profile-title" aria-modal="true" role="dialog">
+            <header className="dash-farmer-profile-head">
+              <div className="dash-farmer-profile-avatar">
+                {selectedFarmer.avatar_url
+                  ? <img src={selectedFarmer.avatar_url} alt="" />
+                  : selectedFarmer.full_name.slice(0, 1)}
+              </div>
+              <div className="dash-farmer-profile-heading">
+                <span className="dash-page-eyebrow">FARMER PROFILE</span>
+                <h2 id="farmer-profile-title">{selectedFarmer.full_name}</h2>
+                <span className={`dash-badge ${selectedFarmer.is_active === false ? "red" : "green"}`}>
+                  {selectedFarmer.is_active === false ? "Inactive" : "Active"}
+                </span>
+              </div>
+              <button className="dash-farmer-modal-close" type="button" onClick={closeFarmerProfile} aria-label="Close farmer profile">
+                <X size={18} />
+              </button>
+            </header>
+
+            <div className="dash-farmer-profile-details">
+              <div><Mail size={15} /><span><small>Email</small><strong>{selectedFarmer.email || "Not provided"}</strong></span></div>
+              <div><Phone size={15} /><span><small>Phone</small><strong>{selectedFarmer.phone || "Not provided"}</strong></span></div>
+              <div><UserRound size={15} /><span><small>Active rentals</small><strong>{selectedActiveRentals.length || "None"}</strong></span></div>
+              <div><DoorOpen size={15} /><span><small>Assigned rooms</small><strong>{selectedFarmerRooms.length ? selectedFarmerRooms.map((room) => `Room ${String(room.room_number).padStart(2, "0")}`).join(", ") : "None"}</strong></span></div>
+            </div>
+
+            <div className="dash-farmer-profile-actions">
+              <button className="dash-primary-button" type="button" onClick={() => { setSelectedFarmer(null); startEdit(selectedFarmer); }}>
+                <Pencil size={14} /> Edit details
+              </button>
+              <button className="dash-secondary-button" type="button" onClick={() => void sendLink(selectedFarmer)} disabled={useMocks || !selectedFarmer.email || busyId === selectedFarmer.id}>
+                {busyId === selectedFarmer.id ? <LoaderCircle className="dash-spin" size={14} /> : <Mail size={14} />} Send link
+              </button>
+              <button className="dash-secondary-button" type="button" onClick={() => void toggleActive(selectedFarmer)} disabled={busyId === selectedFarmer.id}>
+                {selectedFarmer.is_active === false ? <UserCheck size={14} /> : <UserX size={14} />}
+                {selectedFarmer.is_active === false ? "Reactivate" : "Deactivate"}
+              </button>
+              <button className="dash-room-delete-button" type="button" onClick={() => { setSelectedFarmer(null); void handleDeleteFarmer(selectedFarmer); }} disabled={busyId === selectedFarmer.id || deletingId === selectedFarmer.id}>
+                {deletingId === selectedFarmer.id ? <LoaderCircle className="dash-spin" size={14} /> : <Trash2 size={14} />}
+                {deletingId === selectedFarmer.id ? "Deleting..." : "Delete account"}
+              </button>
+            </div>
+          </section>
+        </div>,
+        document.body,
+      )}
+
       <section className="dash-stats dash-stats-3" aria-label="Farmer summary">
-        <article className="dash-stat-card"><div className="dash-stat-top">Registered farmers<span className="dash-stat-icon"><Users size={17} /></span></div><strong>{summary.length}</strong><small>Farmer profiles in sample data</small></article>
-        <article className="dash-stat-card"><div className="dash-stat-top">Active rentals<span className="dash-stat-icon"><Users size={17} /></span></div><strong>{rentals.filter((rental) => rental.status === "active").length}</strong><small>Current rental agreements</small></article>
-        <article className="dash-stat-card"><div className="dash-stat-top">Rooms assigned<span className="dash-stat-icon"><Users size={17} /></span></div><strong>{rentalRooms.length}</strong><small>Across active and past agreements</small></article>
+        <article className="dash-stat-card"><div className="dash-stat-top">Registered farmers<span className="dash-stat-icon"><Users size={17} /></span></div><strong>{summary.length}</strong><small>Farmer profiles in the system.</small></article>
+        <article className="dash-stat-card"><div className="dash-stat-top">Active rentals<span className="dash-stat-icon"><UserCheck size={17} /></span></div><strong>{rentals.filter((rental) => rental.status === "active").length}</strong><small>Current rental agreements.</small></article>
+        <article className="dash-stat-card"><div className="dash-stat-top">Rooms assigned<span className="dash-stat-icon"><DoorOpen size={17} /></span></div><strong>{rentalRooms.length}</strong><small>Across active and past agreements.</small></article>
       </section>
 
       <section className="dash-panel">
@@ -457,7 +546,20 @@ export default function AdminFarmers() {
               const busy = busyId === farmer.id || deletingId === farmer.id;
               return (
                 <Fragment key={farmer.id}>
-                  <tr>
+                  <tr
+                    className="dash-farmer-row"
+                    onClick={(event) => {
+                      if ((event.target as HTMLElement).closest("button, a, input")) return;
+                      setSelectedFarmer(farmer);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedFarmer(farmer);
+                      }
+                    }}
+                    tabIndex={0}
+                  >
                     <td>
                       <strong className="dash-farmer-name">
                         <span>
@@ -470,7 +572,7 @@ export default function AdminFarmers() {
                       <small>Farmer account</small>
                     </td>
                     <td>{farmer.email || farmer.phone || "—"}</td>
-                    <td>{activeRentals.length || "—"}</td>
+                    <td>{activeRentals.length ? `${activeRentals.length} rental${activeRentals.length === 1 ? "" : "s"}` : "—"}</td>
                     <td>{farmerRooms.length ? farmerRooms.map((room) => `Room ${String(room.room_number).padStart(2, "0")}`).join(", ") : "—"}</td>
                     <td><span className={`dash-badge ${active ? "green" : "red"}`}>{active ? "Active" : "Inactive"}</span></td>
                     <td>

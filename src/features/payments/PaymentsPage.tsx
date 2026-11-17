@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BadgeInfo, CalendarDays, CircleDollarSign, ReceiptText } from "lucide-react";
+import { BadgeInfo, CalendarDays, CircleDollarSign, ReceiptText } from "@/components/ui/Iconly";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";
 import { formatGHS } from "@/lib/utils";

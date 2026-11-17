@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Maximize2, Minimize2, RotateCw } from "lucide-react";
+import { Camera, Maximize2, Minimize2, RotateCw } from "@/components/ui/Iconly";
 
 export default function VideoPlayer({ cameraId }: { cameraId: string }) {
   const playerRef = useRef<HTMLDivElement>(null);

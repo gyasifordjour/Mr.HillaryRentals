@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowLeft, ArrowRight, AtSign, Camera, Eye, EyeOff, LockKeyhole, ShieldCheck, Sprout, UserRound, UsersRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, AtSign, Camera, Eye, EyeOff, LockKeyhole, ShieldCheck, Sprout, UserRound, UsersRound } from "@/components/ui/Iconly";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoAuth, useMocks } from "@/lib/supabase";

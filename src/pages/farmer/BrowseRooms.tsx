@@ -1,5 +1,5 @@
 import { useMemo, useState, type MouseEvent as ReactMouseEvent } from "react";
-import { ArrowDownUp, ArrowLeft, ArrowRight, Camera, Check, MapPin, PiggyBank } from "lucide-react";
+import { ArrowDownUp, ArrowLeft, ArrowRight, Camera, Check, MapPin, PiggyBank } from "@/components/ui/Iconly";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";

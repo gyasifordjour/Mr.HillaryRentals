@@ -14,6 +14,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminRooms from "@/pages/admin/AdminRooms";
 import AdminCameras from "@/pages/admin/AdminCameras";
 import AdminFarmers from "@/pages/admin/AdminFarmers";
+import AdminAnalytics from "@/pages/admin/AdminAnalytics";
 import RentalsPage from "@/features/rentals/RentalsPage";
 import RentalRequestPage from "@/features/rentals/RentalRequestPage";
 import ServicesPage from "@/features/services/ServicesPage";
@@ -47,6 +48,7 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute role="admin" />}>
         <Route element={<AppShell />}>
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/analytics" element={<AdminAnalytics />} />
           <Route path="/admin/rentals" element={<RentalsPage />} />
           <Route path="/admin/rooms" element={<AdminRooms />} />
           <Route path="/admin/cameras" element={<AdminCameras />} />

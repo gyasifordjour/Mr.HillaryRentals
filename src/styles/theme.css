@@ -537,6 +537,44 @@ html.dark .rooms-help-button { background: #8fd694; color: #0d2115 !important; }
 html.dark .rooms-footer { background: #101a14; }
 html.dark .rooms-footer .rooms-brand-mark { background: #223229; color: #a9dd8f; }
 
+html.dark .admin-dashboard-shell {
+  --dash-ink: #f4f4f5;
+  --dash-muted: #a1a1aa;
+  --dash-line: #303038;
+  background: #111113;
+  color: #f4f4f5;
+}
+
+html.dark .admin-dashboard-shell .dashboard-sidebar {
+  border-color: #303038;
+  background: #1b1b1f;
+}
+
+html.dark .admin-dashboard-shell .dashboard-brand-mark {
+  background: #27272a;
+  color: #e4e4e7;
+}
+
+html.dark .admin-dashboard-shell .admin-crm-side-action { color: #a1a1aa; }
+html.dark .admin-dashboard-shell .admin-crm-side-action:hover { background: #2a2a2f; color: #f4f4f5; }
+html.dark .admin-dashboard-shell .admin-crm-side-action.active { background: #f4f4f5; color: #18181b; }
+
+html.dark .admin-dashboard-shell .dashboard-topbar {
+  border-color: #303038;
+  background: rgba(24, 24, 27, .94);
+}
+
+html.dark .admin-dashboard-shell .admin-crm-brand,
+html.dark .admin-dashboard-shell .admin-crm-nav a { color: #d4d4d8; }
+html.dark .admin-dashboard-shell .admin-crm-nav a:hover { background: #2a2a2f; }
+html.dark .admin-dashboard-shell .admin-crm-nav a.active { background: #09090b; color: #fff; }
+html.dark .admin-dashboard-shell .admin-crm-circle-action {
+  border-color: #3f3f46;
+  background: #27272a;
+  color: #d4d4d8;
+}
+html.dark .admin-dashboard-shell .admin-crm-circle-action:hover { background: #3f3f46; }
+
 @media (max-width: 380px) {
   .login-topbar-actions .login-back-link { display: none; }
 }

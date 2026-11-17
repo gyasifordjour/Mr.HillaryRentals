@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, ArrowRight, Phone, Sprout, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, Phone, Sprout, UserRound } from "@/components/ui/Iconly";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoAuth } from "@/lib/supabase";

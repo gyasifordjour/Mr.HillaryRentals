@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { ArrowLeft, CalendarDays, ClipboardCheck, MapPin, PiggyBank } from "lucide-react";
+import { ArrowLeft, CalendarDays, ClipboardCheck, MapPin, PiggyBank } from "@/components/ui/Iconly";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDemoWorkflows } from "@/features/demo/DemoWorkflowProvider";
